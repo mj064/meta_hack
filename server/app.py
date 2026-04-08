@@ -80,7 +80,7 @@ async def serve_dashboard():
         return HTMLResponse(content=f.read())
 
 @app.post("/reset", tags=["Core API"])
-async def reset_environment(req: ResetRequest):
+async def reset_environment(req: ResetRequest = ResetRequest()):
     """Initializes a new moderation case and returns the observation state."""
     env = ContentGuardEnv()
     obs = env.reset(task_id=req.task_id)
