@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContentGuardEnv | Advanced Autonomous HQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Elite Fluid Particle Interaction Background -->
+    <canvas id="fluid-canvas"></canvas>
+
+    <!-- Top Navigation -->
+    <header class="glass-panel main-header">
+        <h1><i class="fa-solid fa-shield-halved"></i> <span>Content</span>GuardEnv</h1>
+        
+        <div class="task-selector" id="task-selector">
+            <button class="btn btn-outline" onclick="app.startEpisode('easy')"><i class="fa-solid fa-magnifying-glass" style="color: #10b981;"></i> Easy (Detect)</button>
+            <button class="btn btn-outline" onclick="app.startEpisode('medium')"><i class="fa-solid fa-gavel" style="color: #f59e0b;"></i> Medium (Action)</button>
+            <button class="btn btn-outline" onclick="app.startEpisode('hard')"><i class="fa-solid fa-file-signature" style="color: #ef4444;"></i> Hard (Appeal)</button>
+        </div>
+
+        <div class="header-controls">
+            <button class="btn btn-outline" onclick="app.toggleSettings()"><i class="fa-solid fa-gear"></i> Settings</button>
+            <div class="status-badge glass-panel">
+                <div id="status-indicator" class="status-indicator"></div>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid" id="landing-page">
+        <div style="text-align: center; margin-top: 5rem;" id="intro-section">
+            <h2 class="gradient-text" style="font-size: 3rem; margin-bottom: 0.5rem; text-transform:none;">Autonomous Moderation Workspace</h2>
+            <p class="text-muted" style="font-size: 1.2rem;">Select a task difficulty above to spin up a simulated environment.</p>
+            <div style="margin-top: 4rem; opacity: 0.7;">
+                <i class="fa-brands fa-meta" style="font-size: 4rem;"></i>
+                <i class="fa-solid fa-xmark" style="font-size: 1.5rem; margin: 0 2rem; vertical-align: super;"></i>
+                <i class="fa-solid fa-face-smiling-hands" style="font-size: 4rem;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid" id="main-interface" style="display: none;">
+        <div class="workspace-grid">
+            
+            <!-- Column 1: Case Data -->
+            <div class="workspace-col fade-in" id="col-data">
+                <div class="glass-panel panel-content h-full" style="display:flex; flex-direction:column; gap:1rem;">
+                    
+                    <!-- Elite v3.0: Policy Briefing Header -->
+                    <div class="alert-banner box-glow" id="policy-alert-banner">
+                        <div class="alert-badge" id="alert-level">GREEN</div>
+                        <div class="alert-content">
+                            <strong id="alert-topic">System Stable</strong>
+                            <p id="alert-summary">No active platform-wide risks detected.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-section scrollable" style="flex:1;">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-file-invoice"></i> Content Case <span id="current-task-badge" class="badge">Type</span></h3>
+                            <span class="post-id" id="val-post-id">#POST-XXX</span>
+                        </div>
+                        
+                        <div class="content-preview box-glow" id="val-content">
+                            <!-- Typewriter content goes here -->
+                        </div>
+                        
+                        <div class="meta-grid">
+                            <div class="stat-box">
+                                <span class="label">Platform <i class="fa-solid fa-globe"></i></span>
+                                <span class="value text-primary" id="val-platform">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="label">Acc. Age <i class="fa-solid fa-clock"></i></span>
+                                <span class="value" id="val-user-age">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="label">Violations <i class="fa-solid fa-triangle-exclamation"></i></span>
+                                <span class="value text-danger" id="val-prior-violations">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="label">Reports <i class="fa-solid fa-flag"></i></span>
+                                <span class="value text-warning" id="val-reports">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Elite v3.0: Platform Risk Telemetry -->
+                    <div class="panel-section" style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+                        <h4 class="text-xs text-muted" style="margin-bottom:0.8rem; text-transform:uppercase; letter-spacing:1px;">Platform Risk Telemetry</h4>
+                        <div class="meta-grid">
+                            <div class="stat-box">
+                                <span class="label">Queue Depth</span>
+                                <span class="value" id="val-queue-depth">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="label">Avg Harm</span>
+                                <span class="value" id="val-avg-harm">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Column 2: Agent Configuration / Manual Ovveride -->
+            <div class="workspace-col fade-in delay-1 tilt-card" id="col-config">
+                <div class="glass-panel panel-content h-full">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-sliders"></i> Moderation Override</h3>
+                    </div>
+                    
+                    <div class="panel-body scrollable" style="display:flex; flex-direction:column; justify-content:space-between;">
+                        <div id="action-panel">
+                            <!-- Rendered form -->
+                        </div>
+                        
+                        <div class="auto-agent-box">
+                            <h4><i class="fa-solid fa-robot"></i> Advanced Execution</h4>
+                            <p class="text-muted text-sm">Transfer control to the autonomous agent. Single step or enable Continuous RL Training mode.</p>
+                            
+                            <div style="display:flex; gap:0.5rem; justify-content:center;">
+                                <button class="btn btn-outline" style="border-color: #10b981; color: #10b981;" id="btn-run-agent" onclick="app.runAgent(false)">
+                                    <i class="fa-solid fa-play"></i> Single Step
+                                </button>
+                                
+                                <button class="btn btn-ai" style="flex:1;" id="btn-auto-loop" onclick="app.toggleAutoLoop()">
+                                    <i class="fa-solid fa-infinity"></i> Start Auto-Training Loop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Terminal Feed / Results -->
+            <div class="workspace-col fade-in delay-2 tilt-card" id="col-term">
+                <div class="glass-panel panel-content h-full terminal-wrapper" style="display:flex; flex-direction:column;">
+                    <div class="global-hud">
+                        <div class="hud-item"><span class="hud-label">Episodes:</span><span class="hud-val" id="hud-episodes">0</span></div>
+                        <div class="hud-item"><span class="hud-label">Accuracy:</span><span class="hud-val" id="hud-accuracy">0.0%</span></div>
+                    </div>
+                    <div class="terminal-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <div class="terminal-title">agent-trace.sh</div>
+                    </div>
+                    <div class="terminal-body scrollable" id="terminal-output">
+                        <div class="log-line">> Initiating OpenEnv environment context...</div>
+                        <div class="log-line">> Waiting for execution command.</div>
+                    </div>
+                    
+                    <!-- Reward Overlay that pops up after completion -->
+                    <div class="reward-overlay" id="reward-overlay" style="display:none;">
+                        <div class="reward-ring" id="reward-display">0.0</div>
+                        <h4 style="margin-bottom:0.5rem;">Grade Received</h4>
+                        <div class="feedback-text text-sm" id="feedback-display">...</div>
+                        <button class="btn btn-outline" style="margin-top:1.5rem;" onclick="app.closeReward()">Dismiss</button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Elite v3.3: Credentials Modal -->
+    <div class="modal-overlay" id="settings-modal" style="display:none;">
+        <div class="glass-panel modal-content box-glow">
+            <div class="panel-header">
+                <h3><i class="fa-solid fa-key"></i> Remote Inference Settings</h3>
+                <button class="btn btn-outline btn-sm" onclick="app.toggleSettings()">×</button>
+            </div>
+            <div class="panel-body">
+                <p class="text-xs text-muted" style="margin-bottom:1.5rem;">Judges can provide their own credentials for evaluation. These are stored locally and transmitted only for current session tasks.</p>
+                
+                <div class="form-group">
+                    <label>API Key / HF Token</label>
+                    <input type="password" id="cfg-api-key" placeholder="hf_... or sk-...">
+                </div>
+                <div class="form-group">
+                    <label>Inference Base URL</label>
+                    <input type="text" id="cfg-base-url" placeholder="https://api-inference.huggingface.co/v1">
+                </div>
+                <div class="form-group">
+                    <label>Target Model</label>
+                    <input type="text" id="cfg-model" placeholder="meta-llama/Llama-3-70b-instruct">
+                </div>
+                
+                <div style="margin-top:2rem; display:flex; gap:0.5rem;">
+                    <button class="btn btn-ai w-full" onclick="app.saveSettings()">Save & Activate</button>
+                    <button class="btn btn-outline" onclick="app.clearSettings()">Reset Default</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

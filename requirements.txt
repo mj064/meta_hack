@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+openai
+httpx
+python-dotenv
+datasets
+huggingface-hub
+openenv-core>=0.2.0
+python-multipart
+websockets
+pydantic
+pandas
+numpy
+pytest
+pytest-asyncio

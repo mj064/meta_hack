@@ -1,0 +1,42 @@
+openenv: 0.2.0
+name: content-guard-env
+version: "1.0.0"
+description: >
+  An OpenEnv-compliant training environment for AI content moderation agents.
+  Simulates Meta-scale Trust & Safety decisions across three progressive tasks:
+  violation detection, enforcement action, and appeal report generation.
+author: mj064
+tags:
+  - openenv
+  - content-moderation
+  - trust-and-safety
+  - meta
+  - llama-3tasks:
+  - id: easy
+    name: Violation Type Detection
+    description: Classify social media post into one of 7 violation categories
+    difficulty: easy
+    reward_range: [0.0, 1.0]
+  - id: medium
+    name: Moderation Action Decision
+    description: Decide enforcement action and severity rating for a flagged post
+    difficulty: medium
+    reward_range: [0.0, 1.0]
+  - id: hard
+    name: User Appeal Report
+    description: Write the official moderation ruling report for a user appeal
+    difficulty: hard
+    reward_range: [0.0, 1.0]
+hardware:
+  cpu: 2
+  memory_gb: 8
+environment:
+  port: 7860
+  api:
+    rest: true
+    websocket: true
+  endpoints:
+    reset: POST /reset
+    step: POST /step/{episode_id}
+    state: GET /state/{episode_id}
+    websocket: WS /ws

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "content-guard-env"
+version = "1.0.0"
+description = "Autonomous Content Moderation AI Training Environment"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "openai",
+    "httpx",
+    "python-dotenv",
+    "datasets",
+    "huggingface-hub",
+    "openenv-core>=0.2.0"
+]
+
+[project.scripts]
+content-guard-env = "server.app:main"
+server = "server.app:main"
