@@ -11,7 +11,10 @@ tags:
   - content-moderation
   - trust-and-safety
   - meta
-  - llama-3tasks:
+  - llama-3
+  - agent-environment
+
+tasks:
   - id: easy
     name: Violation Type Detection
     description: Classify social media post into one of 7 violation categories
