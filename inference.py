@@ -7,11 +7,13 @@ from typing import List, Optional
 from openai import AsyncOpenAI
 from server.env.environment import ContentGuardEnv
 
-# Mandatory Environment Variables
-IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME", "content-guard-env")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
+# --- MANDATORY CONFIGURATION ---
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME", "content-guard-env")
+# -------------------------------
+
 TASK_ID = os.getenv("CG_TASK", "hard")
 BENCHMARK = "ContentGuardEnv"
 
@@ -40,10 +42,10 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
 
 async def main() -> None:
     # 1. Initialize Standard Client
-    client = AsyncOpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+    client = AsyncOpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
     # 2. Standard OpenEnv Factory Call
-    env = await ContentGuardEnv.from_docker_image(IMAGE_NAME)
+    env = await ContentGuardEnv.from_docker_image(LOCAL_IMAGE_NAME)
 
     rewards: List[float] = []
     steps_total = 0
