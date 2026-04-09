@@ -27,6 +27,13 @@ _POLICY_CLUSTERS = {
 # Standard Enforcement Escalation Ladder (ordered by severity)
 _ENFORCEMENT_LADDER = ["no_action", "add_warning_label", "restrict_reach", "escalate_to_human", "remove"]
 
+def _smooth_reward(score: float) -> float:
+    """
+    Sovereign v3.7 Logic: Ensures scores are strictly between 0 and 1.
+    Translates [0, 1] range to [0.01, 0.99] for automated validator compliance.
+    """
+    return round(max(0.01, min(0.99, score)), 4)
+
 
 # ── EASY: Categorical Alignment ────────────────────────────────────────────────
 
@@ -265,15 +272,17 @@ async def grade_action_async(
 
         audit = json.loads(response.choices[0].message.content)
         
+        score = float(audit["score"]) if "score" in audit else 0.5
+
         # Merge AI score with deterministic ruling check for 'Hard' tasks (integrity check)
         # This ensures the AI doesn't hallucinate a pass on a fundamentally wrong ruling.
         if task_id == "hard":
             gold_ruling = ground_truth.get("ruling", "upheld")
             pred_ruling = (action.get("ruling") or "").strip().lower()
             if pred_ruling != gold_ruling:
-                audit["score"] = min(audit["score"], 0.3) # Hard penalty for wrong verdict
+                score = min(score, 0.3) # Hard penalty for wrong verdict
         
-        return float(audit["score"]), f"[AI JUDGE] {audit['feedback']}", audit["rationale"]
+        return _smooth_reward(score), f"[AI JUDGE] {audit['feedback']}", audit["rationale"]
 
     except Exception as e:
         # Robust Fallback to Heuristic Grader
@@ -299,4 +308,4 @@ def grade_action(
     actual_violation = ground_truth.get("violation", "safe")
     rationale = _POLICY_RATIONALE.get(actual_violation, "Standard policy compliance.")
     
-    return reward, feedback, rationale
+    return _smooth_reward(reward), feedback, rationale
