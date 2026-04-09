@@ -19,12 +19,12 @@ tasks:
     name: Violation Type Detection
     description: Classify social media post into one of 7 violation categories
     difficulty: easy
-    reward_range: [0.0, 1.0]
+    reward_range: [0.05, 0.95]
   - id: medium
     name: Moderation Action Decision
     description: Decide enforcement action and severity rating for a flagged post
     difficulty: medium
-    reward_range: [0.0, 1.0]
+    reward_range: [0.05, 0.95]
   - id: hard
     name: User Appeal Report
     description: Write the official moderation ruling report for a user appeal

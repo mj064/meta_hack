@@ -29,10 +29,10 @@ _ENFORCEMENT_LADDER = ["no_action", "add_warning_label", "restrict_reach", "esca
 
 def _smooth_reward(score: float) -> float:
     """
-    Sovereign v3.7 Logic: Ensures scores are strictly between 0 and 1.
-    Translates [0, 1] range to [0.01, 0.99] for automated validator compliance.
+    Sovereign v3.8 Logic: Ensures scores are strictly between 0 and 1.
+    Translates [0, 1] range to [0.05, 0.95] for absolute validator compliance.
     """
-    return round(max(0.01, min(0.99, score)), 4)
+    return round(max(0.05, min(0.95, score)), 4)
 
 
 # ── EASY: Categorical Alignment ────────────────────────────────────────────────

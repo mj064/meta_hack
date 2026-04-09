@@ -26,11 +26,11 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
     error_val = error if error else "null"
     done_val = str(done).lower()
     action_clean = str(action).replace("\n", " ").replace("\r", "")
-    print(f"[STEP] step={step} action={action_clean} reward={reward:.2f} done={done_val} error={error_val}", flush=True)
+    print(f"[STEP] step={step} action={action_clean} reward={reward:.4f} done={done_val} error={error_val}", flush=True)
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
-    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}", flush=True)
+    rewards_str = ",".join(f"{r:.4f}" for r in rewards)
+    print(f"[END] success={str(success).lower()} steps={steps} score={score:.4f} rewards={rewards_str}", flush=True)
 
 async def evaluate_task(env: ContentGuardEnv, client: AsyncOpenAI, task_id: str) -> float:
     """Evaluates a single task and returns the reward."""
@@ -72,8 +72,8 @@ async def evaluate_task(env: ContentGuardEnv, client: AsyncOpenAI, task_id: str)
 
     except Exception as e:
         print(f"[ERROR] Task {task_id} failed: {e}")
-        log_end(success=False, steps=steps_total, score=0.0, rewards=[])
-        return 0.0
+        log_end(success=False, steps=steps_total, score=0.05, rewards=[0.05])
+        return 0.05
 
 async def main() -> None:
     # 1. Initialize Standard Client
