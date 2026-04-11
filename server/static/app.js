@@ -6,6 +6,7 @@ const app = {
     typewriterTimeout: null,
     isAutoTraining: false,
     metrics: { count: 0, sumReward: 0 },
+    scrollPending: false,
 
     init: function() {
         this.connectWS();
@@ -44,8 +45,30 @@ const app = {
         };
     },
 
+    // ===== SIDEBAR =====
+    toggleSidebar: function() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('open');
+    },
+
+    setActiveNav: function(taskId) {
+        document.querySelectorAll('.nav-item[data-task]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.task === taskId);
+        });
+    },
+
+    // ===== EPISODES =====
     startEpisode: function(taskId) {
         this.currentTask = taskId;
+        this.setActiveNav(taskId);
+
+        // Update breadcrumb
+        const labels = { easy: 'Easy (Detect)', medium: 'Medium (Action)', hard: 'Hard (Appeal)' };
+        document.getElementById('breadcrumb-task').textContent = labels[taskId] || taskId;
+
+        // Close sidebar on mobile
+        document.getElementById('sidebar').classList.remove('open');
+
         const config = JSON.parse(sessionStorage.getItem('env_config') || '{}');
         this.ws.send(JSON.stringify({ 
             action: "reset", 
@@ -54,7 +77,7 @@ const app = {
         }));
         
         document.getElementById('landing-page').style.display = 'none';
-        document.getElementById('main-interface').style.display = 'block';
+        document.getElementById('main-interface').style.display = 'flex';
         document.getElementById('reward-overlay').style.display = 'none';
         
         // Reset Terminal
@@ -68,23 +91,20 @@ const app = {
         const b = obs.policy_briefing;
         const r = obs.global_risk;
         
-        // Elite v3.0: Policy Briefing Update
+        // Policy Briefing
         const banner = document.getElementById('policy-alert-banner');
         document.getElementById('alert-level').textContent = b.alert_level.toUpperCase();
         document.getElementById('alert-topic').textContent = b.current_focus;
         document.getElementById('alert-summary').textContent = b.guidance_summary;
-        
-        // Alert styling
         banner.className = 'alert-banner box-glow ' + b.alert_level.toLowerCase();
 
-        // Elite v3.0: Risk Metrics
+        // Risk Metrics
         document.getElementById('val-queue-depth').textContent = r.queue_depth;
         document.getElementById('val-avg-harm').textContent = r.avg_harm_potential;
 
         document.getElementById('current-task-badge').textContent = obs.task_name;
         document.getElementById('val-post-id').textContent = c.post_id;
         document.getElementById('val-platform').textContent = c.platform;
-        
         document.getElementById('val-user-age').textContent = c.user_account.account_age_days;
         document.getElementById('val-prior-violations').textContent = c.user_account.prior_violations;
         document.getElementById('val-reports').textContent = c.engagement.reports_received;
@@ -114,7 +134,7 @@ const app = {
             html += `</div>`;
         }
         
-        html += `<button class="btn btn-outline w-full" style="margin-top:0.5rem;" onclick="app.submitAction()">Manual Commit</button>`;
+        html += `<button class="btn btn-outline w-full" style="margin-top: 0.5rem;" onclick="app.submitAction()"><i class="fa-solid fa-check"></i> Manual Commit</button>`;
         panel.innerHTML = html;
     },
 
@@ -126,7 +146,7 @@ const app = {
             let val = input.value;
             if (input.type === 'number') val = parseInt(val, 10);
             if (key === 'policy_references' || key === 'diagnoses' || input.placeholder === 'Comma separated values') {
-                val = val ? val.split(',').map(s=>s.trim()) : [];
+                val = val ? val.split(',').map(s => s.trim()) : [];
             }
             payload[key] = val;
         });
@@ -135,6 +155,7 @@ const app = {
         this.ws.send(JSON.stringify({ action: "step", data: payload }));
     },
     
+    // ===== AUTO TRAINING =====
     toggleAutoLoop: function() {
         this.isAutoTraining = !this.isAutoTraining;
         const btn = document.getElementById('btn-auto-loop');
@@ -151,16 +172,14 @@ const app = {
         }
     },
     
-    runAgent: function(isLooping = false) {
+    runAgent: function(isLooping) {
         this.terminalPrint(`> Autonomous agent invoked.`);
         
-        // Setup streaming block
         const term = document.getElementById('terminal-output');
         this.terminalActiveLine = document.createElement('div');
         this.terminalActiveLine.className = 'log-line running';
         term.appendChild(this.terminalActiveLine);
         
-        // Disable buttons to prevent spamming overlapping tasks
         document.getElementById('btn-run-agent').disabled = true;
         document.getElementById('btn-run-agent').style.opacity = '0.5';
         document.getElementById('btn-auto-loop').disabled = true;
@@ -178,7 +197,6 @@ const app = {
         
         this.terminalActiveLine.textContent += content;
         
-        // Debounce scrolling to fix browser lag
         if (!this.scrollPending) {
             this.scrollPending = true;
             requestAnimationFrame(() => {
@@ -190,7 +208,6 @@ const app = {
     },
 
     handleStep: function(result) {
-        // Stop streaming cursor
         if (this.terminalActiveLine) {
             this.terminalActiveLine.classList.remove('running');
             this.terminalActiveLine = null;
@@ -200,7 +217,7 @@ const app = {
         const rc = document.getElementById('reward-display');
         rc.textContent = rw.toFixed(2);
         
-        let color = 'var(--danger)'; 
+        let color = 'var(--danger)';
         let shadow = 'rgba(244, 63, 94, 0.5)';
         if (rw >= 0.8) { color = 'var(--success)'; shadow = 'rgba(16, 185, 129, 0.5)'; }
         else if (rw >= 0.4) { color = 'var(--warning)'; shadow = 'rgba(251, 191, 36, 0.5)'; }
@@ -212,7 +229,6 @@ const app = {
         document.getElementById('feedback-display').textContent = result.info.feedback;
         document.getElementById('reward-overlay').style.display = 'flex';
         
-        // Re-enable button
         document.getElementById('btn-run-agent').disabled = false;
         document.getElementById('btn-run-agent').style.opacity = '1';
         document.getElementById('btn-auto-loop').disabled = false;
@@ -227,7 +243,7 @@ const app = {
         this.terminalPrint(`==============================`);
         this.terminalPrint('');
         
-        // Update HUD Metrics
+        // Update HUD
         this.metrics.count++;
         this.metrics.sumReward += rw;
         document.getElementById('hud-episodes').textContent = this.metrics.count;
@@ -237,22 +253,24 @@ const app = {
             this.terminalPrint(`> [LOOP] Waiting 2s before initiating next cycle...`);
             setTimeout(() => {
                 if (this.isAutoTraining) {
-                    this.closeReward(true); // Resets environment and clears terminal safely
+                    this.closeReward(true);
                     setTimeout(() => {
                         if (this.isAutoTraining) this.runAgent(true);
-                    }, 500); // Wait for reset to finish
+                    }, 500);
                 }
             }, 2000);
         }
     },
     
-    closeReward: function(triggerNext = true) {
+    closeReward: function(triggerNext) {
         document.getElementById('reward-overlay').style.display = 'none';
-
-        // Clear terminal when explicitly moving to the next case
         document.getElementById('terminal-output').innerHTML = '';
-        
         if (triggerNext && this.currentTask) this.startEpisode(this.currentTask);
+    },
+
+    clearTerminal: function() {
+        document.getElementById('terminal-output').innerHTML = '';
+        this.terminalPrint('> Terminal cleared.');
     },
     
     terminalPrint: function(msg) {
@@ -266,7 +284,6 @@ const app = {
         line.textContent = msg;
         term.appendChild(line);
         
-        // Truncate logic to prevent PC lag from infinitely expanding DOM
         while (term.children.length > 50) {
             term.removeChild(term.firstChild);
         }
@@ -294,15 +311,15 @@ const app = {
         type();
     },
 
+    // ===== VISUALS =====
     initVisuals: function() {
-        // --- Fluid Particles Canvas System ---
         const canvas = document.getElementById('fluid-canvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
         const particles = [];
-        const numParticles = 80;
+        const numParticles = 60;
 
         window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
@@ -313,10 +330,14 @@ const app = {
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: (Math.random() - 0.5) * 0.5,
-                radius: Math.random() * 2 + 1,
-                color: Math.random() > 0.5 ? 'rgba(99, 102, 241, 0.4)' : 'rgba(16, 185, 129, 0.3)'
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                radius: Math.random() * 1.8 + 0.8,
+                color: Math.random() > 0.6
+                    ? 'rgba(99, 102, 241, 0.35)'
+                    : Math.random() > 0.3
+                        ? 'rgba(16, 185, 129, 0.25)'
+                        : 'rgba(139, 92, 246, 0.2)'
             });
         }
 
@@ -326,7 +347,6 @@ const app = {
             particles.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
-                
                 if (p.x < 0 || p.x > width) p.vx *= -1;
                 if (p.y < 0 || p.y > height) p.vy *= -1;
                 
@@ -336,16 +356,15 @@ const app = {
                 ctx.fill();
             });
 
-            // Draw connecting lines
             for (let i = 0; i < particles.length; i++) {
                 for (let j = i + 1; j < particles.length; j++) {
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (dist < 150) {
+                    if (dist < 140) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - dist/1500})`;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.06 - dist / 2500})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
@@ -358,7 +377,7 @@ const app = {
         draw();
     },
 
-    // --- Elite v3.3: Credential Management ---
+    // ===== SETTINGS =====
     toggleSettings: function() {
         const modal = document.getElementById('settings-modal');
         modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
@@ -370,12 +389,11 @@ const app = {
         const baseUrl = document.getElementById('cfg-base-url').value;
         const model = document.getElementById('cfg-model').value;
 
-        // Elite v3.5: Client-side Smart Validation
         if (apiKey.startsWith('hf_') && (!baseUrl || baseUrl.includes('openai.com'))) {
             if (confirm("Detected Hugging Face Token but OpenAI endpoint. Auto-switch to Hugging Face Inference API?")) {
                 document.getElementById('cfg-base-url').value = "https://api-inference.huggingface.co/v1";
                 if (!model) document.getElementById('cfg-model').value = "meta-llama/Llama-3-70b-instruct";
-                return; // Let them save again with the new values
+                return;
             }
         }
 
