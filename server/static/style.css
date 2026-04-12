@@ -509,6 +509,7 @@ body::after {
     grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
     gap: 0;
     min-height: 0;
+    overflow: hidden;
 }
 
 .view-col {
@@ -518,10 +519,12 @@ body::after {
     padding: var(--hud-gap);
     overflow-y: auto;
     min-width: 0;
+    min-height: 0;
 }
 
 .terminal-column {
     padding-left: 0;
+    overflow: hidden;
 }
 
 .card {
@@ -622,16 +625,22 @@ body::after {
     margin: 0;
     color: var(--text-secondary);
     line-height: 1.55;
+    overflow-wrap: anywhere;
 }
 
 .content-box {
     min-height: 116px;
+    max-height: clamp(130px, 28vh, 260px);
+    overflow-y: auto;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-medium);
     background: linear-gradient(145deg, #fffdfa, #f7f1e6);
     padding: 18px;
     line-height: 1.72;
     color: var(--ink-800);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .stat-grid {
@@ -799,6 +808,7 @@ body::after {
     display: flex;
     flex-direction: column;
     min-height: 100%;
+    height: 100%;
 }
 
 .terminal-card::before {
@@ -858,11 +868,13 @@ body::after {
     line-height: 1.74;
     color: rgba(219, 233, 239, 0.9);
     position: relative;
+    min-height: 0;
 }
 
 .log-line {
     margin-bottom: 8px;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
 }
 
@@ -907,6 +919,8 @@ body::after {
     text-align: left;
     color: rgba(231, 240, 245, 0.92);
     line-height: 1.7;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .modal-overlay {

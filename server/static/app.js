@@ -12,6 +12,7 @@ const app = {
     isAutoTraining: false,
     autoRunAfterReset: false,
     episodeDone: false,
+    oversightStickToBottom: true,
     metrics: { count: 0, sumReward: 0 },
     scrollPending: false,
 
@@ -20,6 +21,12 @@ const app = {
         this.connectWS();
         this.initVisuals();
         this.loadSettings();
+        this.bindHotkeys();
+        this.bindOversightViewport();
+
+        window.addEventListener('resize', () => {
+            this.scrollOversightToBottom(true);
+        });
         
         // Add staggered fade-in classes to UI blocks
         document.querySelectorAll('.sidebar, .topbar, .card').forEach((el, i) => {
@@ -30,6 +37,56 @@ const app = {
                 el.style.transform = 'translateY(0)';
             }, 100 * i);
         });
+    },
+
+    bindHotkeys: function() {
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
+
+            const target = event.target;
+            const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+            if (target && (target.isContentEditable || tag === 'input' || tag === 'textarea' || tag === 'select')) return;
+
+            const modal = document.getElementById('settings-modal');
+            if (modal && modal.style.display === 'flex') return;
+
+            event.preventDefault();
+            this.quickCycleEpisode();
+        });
+    },
+
+    bindOversightViewport: function() {
+        const term = document.getElementById('terminal-output');
+        if (!term) return;
+
+        this.oversightStickToBottom = true;
+        term.addEventListener('scroll', () => {
+            const distanceFromBottom = term.scrollHeight - term.scrollTop - term.clientHeight;
+            this.oversightStickToBottom = distanceFromBottom < 36;
+        });
+    },
+
+    scrollOversightToBottom: function(force) {
+        const term = document.getElementById('terminal-output');
+        if (!term) return;
+        if (force || this.oversightStickToBottom) {
+            term.scrollTop = term.scrollHeight;
+        }
+    },
+
+    quickCycleEpisode: function() {
+        if (!this.currentTask) {
+            this.terminalPrint('NOTICE: Select an environment tier before quick-cycle (/).');
+            return;
+        }
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            this.terminalPrint('WARNING: Gateway link unavailable. Wait for LINK ACTIVE.');
+            return;
+        }
+
+        this.closeReward(true);
+        this.terminalPrint('LOG: Quick-cycle trigger received (/). Starting a new episode...');
+        this.startEpisode(this.currentTask);
     },
 
     connectWS: function() {
@@ -255,6 +312,7 @@ const app = {
         this.terminalActiveLine = document.createElement('div');
         this.terminalActiveLine.className = 'log-line active';
         term.appendChild(this.terminalActiveLine);
+        this.scrollOversightToBottom(true);
         
         document.getElementById('btn-run-agent').disabled = true;
         document.getElementById('btn-auto-loop').disabled = !isLooping;
@@ -317,8 +375,7 @@ const app = {
         if (!this.scrollPending) {
             this.scrollPending = true;
             requestAnimationFrame(() => {
-                const term = document.getElementById('terminal-output');
-                term.scrollTop = term.scrollHeight;
+                this.scrollOversightToBottom(false);
                 this.scrollPending = false;
             });
         }
@@ -388,9 +445,9 @@ const app = {
         }
     },
     
-    closeReward: function() {
+    closeReward: function(silent) {
         document.getElementById('reward-overlay').style.display = 'none';
-        if (!this.isAutoTraining) {
+        if (!silent && !this.isAutoTraining) {
             this.terminalPrint(`LOG: Alignment evaluation captured and dismissed.`);
         }
     },
@@ -412,7 +469,7 @@ const app = {
         term.appendChild(line);
         
         while (term.children.length > 50) term.removeChild(term.firstChild);
-        term.scrollTop = term.scrollHeight;
+        this.scrollOversightToBottom(true);
     },
     
     typeWriterEffect: function(elemId, text, speed) {
