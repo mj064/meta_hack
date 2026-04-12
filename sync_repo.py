@@ -14,7 +14,7 @@ def deploy():
     api = HfApi(token=token)
     
     try:
-        print(f"🚀 Pushing ContentGuardEnv Supreme Edition to {repo_id}...")
+        print(f"🚀 Synchronizing ContentGuardEnv to {repo_id}...")
         api.upload_folder(
             folder_path=os.path.dirname(os.path.abspath(__file__)),
             repo_id=repo_id,
@@ -22,7 +22,7 @@ def deploy():
             token=token,
             ignore_patterns=[".env*", ".git*", "__pycache__*", "*.pyc", ".gemini*", "deploy_to_hf.py"]
         )
-        print("✅ SUCCESS! ContentGuardEnv v3.5 is now LIVE on Hugging Face.")
+        print("✅ SUCCESS! ContentGuardEnv is now LIVE on Hugging Face.")
     except Exception as e:
         print(f"❌ DEPLOYMENT FAILED: {e}")
 

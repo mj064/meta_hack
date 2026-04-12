@@ -29,8 +29,8 @@ _ENFORCEMENT_LADDER = ["no_action", "add_warning_label", "restrict_reach", "esca
 
 def _smooth_reward(score: float) -> float:
     """
-    Sovereign v3.8 Logic: Ensures scores are strictly between 0 and 1.
-    Translates [0, 1] range to [0.05, 0.95] for absolute validator compliance.
+    Standardizes scores to be strictly between 0 and 1.
+    Translates [0, 1] range to [0.05, 0.95] for environment compliance.
     """
     return round(max(0.05, min(0.95, score)), 4)
 
@@ -135,7 +135,7 @@ def _grade_hard(action: Dict, ground_truth: Dict, case: Dict, **_) -> Tuple[floa
     policy_score = 0.0
     if gold_policies:
         matched = sum(1 for gp in gold_policies if any(gp in pp or pp in gp for pp in pred_policies))
-        # Elite v3.0 logic: Tiered credit. 1 correct = 50% credit. More = 100%.
+        # Hierarchical proximity logic: providing partial credit for related policy clusters.
         if matched >= 1:
             policy_score = 0.2 if matched == len(gold_policies) else 0.15
         else:
@@ -183,7 +183,7 @@ def _grade_hard(action: Dict, ground_truth: Dict, case: Dict, **_) -> Tuple[floa
     return total, feedback
 
 
-# ── Elite v3.0: Teacher Feedback Rationale ─────────────────────────────────────
+# ── Policy Feedback Rationale ──────────────────────────────────────────────────
 _POLICY_RATIONALE = {
     "hate_speech": "Content targeting protected groups with dehumanizing language, slurs, or exclusion is a Tier 1 violation under Meta Section 12.",
     "misinformation": "Health or civic claims that are demonstrably false and likely to lead to physical or social harm require labels or removal.",
@@ -204,7 +204,7 @@ _GRADERS = {
 }
 
 
-# ── Elite v3.2: AI Judge Prompt Template ──────────────────────────────────────
+# ── AI Judge Prompt Template ──────────────────────────────────────────────────
 _JUDGE_PROMPT_TEMPLATE = """
 As a lead Trust & Safety Meta Policy Auditor, evaluate the following moderation decision.
 
@@ -244,7 +244,7 @@ async def grade_action_async(
     task_description: str = ""
 ) -> Tuple[float, str, str]:
     """
-    Elite v3.2 Dispatcher supporting real-time AI Judging.
+    Multitask dispatcher supporting real-time AI Judging and evaluation.
     """
     # 1. Easy tasks always use the fast deterministic grader.
     # 2. If client is missing, fall back to professional heuristics.

@@ -16,18 +16,18 @@ tags:
 
 tasks:
   - id: easy
-    name: Violation Type Detection
-    description: Classify social media post into one of 7 violation categories
+    name: Violation Classification
+    description: Mapping social media content against Meta's primary community standard categories.
     difficulty: easy
     reward_range: [0.05, 0.95]
   - id: medium
-    name: Moderation Action Decision
-    description: Decide enforcement action and severity rating for a flagged post
+    name: Enforcement Proximity
+    description: Determining the proportionate enforcement action and severity for a detected policy violation.
     difficulty: medium
     reward_range: [0.05, 0.95]
   - id: hard
-    name: User Appeal Report
-    description: Write the official moderation ruling report for a user appeal
+    name: Appellate Adjudication
+    description: Generating high-fidelity moderation rulings with evidence-backed policy rationale.
     difficulty: hard
     reward_range: [0.0, 1.0]
 hardware:

@@ -18,7 +18,7 @@ async def test_grade_easy_perfect_match():
 
 @pytest.mark.asyncio
 async def test_grade_easy_cluster_match():
-    # Misclassifying Hate Speech as Harassment should give partial credit (Elite v3.0 logic)
+    # Misclassifying Hate Speech as Harassment should give partial credit (Standard logic)
     action = {"violation": "harassment"}
     ground_truth = {"violation": "hate_speech"}
     reward, feedback, rationale = await grade_action_async(action, ground_truth, "easy", {})

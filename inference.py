@@ -84,7 +84,7 @@ async def main() -> None:
     client = AsyncOpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     env = await ContentGuardEnv.from_docker_image(LOCAL_IMAGE_NAME)
 
-    # 2. Portfolio Evaluation (Elite v3.7 Multitask Loop)
+    # 2. Portfolio Evaluation (Standard Multitask Loop)
     # If CG_TASK is set, run only that task. Otherwise, run the full suite.
     target_task = os.getenv("CG_TASK")
     tasks_to_run = [target_task] if target_task else ["easy", "medium", "hard"]

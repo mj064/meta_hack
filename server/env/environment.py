@@ -44,7 +44,7 @@ class ModerationCase(BaseModel):
 
 
 class Observation(BaseModel):
-    """Elite v3.0 Observation package."""
+    """Standard Observation package."""
     episode_id: str
     task_id: str
     task_name: str
@@ -59,7 +59,7 @@ class Observation(BaseModel):
 class ContentGuardEnv:
     """
     OpenEnv Environment: Social Media Content Moderation.
-    v3.0 - Reactive Operational Modeling.
+    - Professional Operational Modeling.
     """
 
     def __init__(self) -> None:
@@ -86,7 +86,7 @@ class ContentGuardEnv:
         self._task_config = TASKS[task_id]
         self.case, self.ground_truth = generate_case(task_id)
 
-        # Reactive operational context (Elite Novelty)
+        # Standard operational context modeling
         briefing = PolicyBriefing(
             alert_level=random.choice(["Green", "Yellow", "Elevated", "Critical"]),
             current_focus=random.choice(["Electoral Integrity", "Public Health", "Minor Safety", "General Policy"]),
@@ -120,7 +120,7 @@ class ContentGuardEnv:
         if self.done:
             raise RuntimeError("Episode finished. Call reset() for a new case.")
 
-        # Elite v3.2: AI-as-a-Judge Integration
+        # AI-as-a-Judge Logic integration
         reward, feedback, rationale = await grade_action_async(
             action=action,
             ground_truth=self.ground_truth,

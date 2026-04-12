@@ -128,7 +128,7 @@ async def policy_trace_socket(websocket: WebSocket):
                 continue
 
             cmd = msg.get("action")
-            # Elite v3.9: Universal Credential Injector
+            # Universal Credential Injector (Session-based)
             cfg = msg.get("config", {})
             if cfg.get("api_key"):
                 api_key = cfg["api_key"]
