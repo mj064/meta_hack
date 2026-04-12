@@ -3,261 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ContentGuardEnv | Advanced Autonomous HQ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <title>THE VAULT | ContentGuard Operations</title>
+    <!-- High-Fidelity Typography -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-    <!-- Fluid Particle Background -->
+    <!-- Dynamic Environment Layer -->
     <canvas id="fluid-canvas"></canvas>
 
-    <!-- App Shell: Sidebar + Main -->
     <div class="app-shell">
-
-        <!-- ===== SIDEBAR ===== -->
-        <aside class="sidebar glass-panel" id="sidebar">
+        
+        <!-- SIDEBAR: Operational Control -->
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo">
+                <div class="logo-icon">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <div class="sidebar-brand">
-                    <span class="brand-name"><span class="text-primary">Content</span>Guard</span>
-                    <span class="brand-version">v1.0</span>
+                <div class="brand-info">
+                    <h1 class="brand-text">THE VAULT</h1>
+                    <p class="nav-label">Moderation HQ</p>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <h4 class="nav-label">Tasks</h4>
+                    <p class="nav-label">Environment Tiers</p>
                     <button class="nav-item" data-task="easy" onclick="app.startEpisode('easy')">
-                        <i class="fa-solid fa-magnifying-glass nav-icon" style="color: var(--success);"></i>
-                        <span>Easy (Detect)</span>
-                        <span class="nav-badge">Lv.1</span>
+                        <i class="fa-solid fa-radar"></i>
+                        <span>Tier I: Detection</span>
+                        <span class="nav-badge">Primary</span>
                     </button>
                     <button class="nav-item" data-task="medium" onclick="app.startEpisode('medium')">
-                        <i class="fa-solid fa-gavel nav-icon" style="color: var(--warning);"></i>
-                        <span>Medium (Action)</span>
-                        <span class="nav-badge">Lv.2</span>
+                        <i class="fa-solid fa-scale-balanced"></i>
+                        <span>Tier II: Action</span>
+                        <span class="nav-badge">Intermediate</span>
                     </button>
                     <button class="nav-item" data-task="hard" onclick="app.startEpisode('hard')">
-                        <i class="fa-solid fa-file-signature nav-icon" style="color: var(--danger);"></i>
-                        <span>Hard (Appeal)</span>
-                        <span class="nav-badge">Lv.3</span>
+                        <i class="fa-solid fa-gavel"></i>
+                        <span>Tier III: Appeal</span>
+                        <span class="nav-badge">Advanced</span>
                     </button>
                 </div>
 
                 <div class="nav-section">
-                    <h4 class="nav-label">Tools</h4>
+                    <p class="nav-label">System Admin</p>
                     <button class="nav-item" onclick="app.toggleSettings()">
-                        <i class="fa-solid fa-gear nav-icon"></i>
-                        <span>Settings</span>
+                        <i class="fa-solid fa-key"></i>
+                        <span>API Credentials</span>
                     </button>
                 </div>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="status-badge" id="sidebar-status">
+                <div class="status-badge">
                     <div id="status-indicator" class="status-indicator"></div>
-                    <span id="status-text">Connecting...</span>
+                    <span id="status-text" class="hud-label">Initializing...</span>
                 </div>
             </div>
         </aside>
 
-        <!-- ===== MAIN CONTENT ===== -->
-        <div class="main-content">
-
-            <!-- Top Bar -->
-            <header class="topbar glass-panel">
-                <div class="topbar-left">
-                    <button class="btn btn-icon sidebar-toggle" onclick="app.toggleSidebar()" title="Toggle sidebar">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                    <div class="breadcrumb">
-                        <span class="breadcrumb-muted">Workspace</span>
-                        <i class="fa-solid fa-chevron-right breadcrumb-sep"></i>
-                        <span class="breadcrumb-current" id="breadcrumb-task">Home</span>
-                    </div>
+        <!-- MAIN STAGE: Operational Hub -->
+        <main class="main-content">
+            
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span class="hud-label">Operational Workspace</span>
+                    <i class="fa-solid fa-chevron-right breadcrumb-sep"></i>
+                    <span id="breadcrumb-task" class="breadcrumb-current">Dashboard</span>
                 </div>
-                <div class="topbar-right">
-                    <!-- HUD Metrics -->
-                    <div class="hud-strip">
-                        <div class="hud-item">
-                            <span class="hud-label">Episodes</span>
-                            <span class="hud-val" id="hud-episodes">0</span>
-                        </div>
-                        <div class="hud-item">
-                            <span class="hud-label">Accuracy</span>
-                            <span class="hud-val" id="hud-accuracy">0.0%</span>
-                        </div>
+
+                <div class="hud-item">
+                    <div class="hud-group">
+                        <span class="hud-label">Session Depth</span>
+                        <span id="hud-episodes" class="hud-value">0</span>
+                    </div>
+                    <div class="hud-group">
+                        <span class="hud-label">Policy Accuracy</span>
+                        <span id="hud-accuracy" class="hud-value">0.0%</span>
                     </div>
                 </div>
             </header>
 
             <!-- Landing Page -->
-            <div class="page-content" id="landing-page">
-                <div class="landing-hero">
-                    <h2 class="gradient-text landing-title">Autonomous Moderation Workspace</h2>
-                    <p class="text-muted landing-subtitle">Select a task difficulty from the sidebar to spin up a simulated environment.</p>
-                    <div class="landing-icons">
-                        <i class="fa-brands fa-meta"></i>
-                        <i class="fa-solid fa-xmark landing-x"></i>
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
+            <section class="page-content" id="landing-page">
+                <div class="landing-hero fade-in">
+                    <h2 class="landing-title">Autonomous Oversight Interface</h2>
+                    <p class="text-secondary landing-subtitle">Select an operational tier from the control strip to begin real-time policy evaluation.</p>
                 </div>
-            </div>
+            </section>
 
-            <!-- Main Workspace (hidden initially) -->
-            <div class="page-content" id="main-interface" style="display: none;">
-                <div class="workspace-grid">
+            <!-- Evaluation Workspace -->
+            <div class="workspace" id="main-interface" style="display: none;">
+                
+                <!-- COLUMN 1: Case Port -->
+                <section class="view-col">
+                    <div class="alert-banner" id="policy-alert-banner">
+                        <span class="alert-badge" id="alert-level">STABLE</span>
+                        <div class="alert-content">
+                            <strong id="alert-topic">System Readiness Validated</strong>
+                            <p id="alert-summary">Environment ready for high-fidelity moderation ingest.</p>
+                        </div>
+                    </div>
 
-                    <!-- Column 1: Case Data + Actions (scrollable) -->
-                    <div class="workspace-col fade-in">
-                        <div class="glass-panel panel-content h-full" style="display:flex; flex-direction:column; gap:0;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Case Metadata</h3>
+                            <span id="val-post-id" class="hud-label">#PENDING</span>
+                        </div>
+                        <div id="val-content" class="content-box">
+                            <!-- Ingested by Typewriter -->
+                        </div>
 
-                            <!-- Policy Alert Banner -->
-                            <div class="alert-banner box-glow" id="policy-alert-banner" style="margin: 1rem 1rem 0;">
-                                <div class="alert-badge" id="alert-level">GREEN</div>
-                                <div class="alert-content">
-                                    <strong id="alert-topic">System Stable</strong>
-                                    <p id="alert-summary">No active platform-wide risks detected.</p>
-                                </div>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <p class="label">Platform Source</p>
+                                <p id="val-platform" class="value text-accent">--</p>
                             </div>
-
-                            <div class="panel-section scrollable" style="flex:1; padding: 1.5rem;">
-                                <div class="panel-header" style="padding: 0; background: transparent; border: none; margin-bottom: 1rem;">
-                                    <h3><i class="fa-solid fa-file-invoice"></i> Content Case <span id="current-task-badge" class="badge">Type</span></h3>
-                                    <span class="post-id" id="val-post-id">#POST-XXX</span>
-                                </div>
-
-                                <div class="content-preview box-glow" id="val-content">
-                                    <!-- Typewriter content -->
-                                </div>
-
-                                <div class="meta-grid">
-                                    <div class="stat-box">
-                                        <span class="label">Platform <i class="fa-solid fa-globe"></i></span>
-                                        <span class="value text-primary" id="val-platform">--</span>
-                                    </div>
-                                    <div class="stat-box">
-                                        <span class="label">Acc. Age <i class="fa-solid fa-clock"></i></span>
-                                        <span class="value" id="val-user-age">--</span>
-                                    </div>
-                                    <div class="stat-box">
-                                        <span class="label">Violations <i class="fa-solid fa-triangle-exclamation"></i></span>
-                                        <span class="value text-danger" id="val-prior-violations">--</span>
-                                    </div>
-                                    <div class="stat-box">
-                                        <span class="label">Reports <i class="fa-solid fa-flag"></i></span>
-                                        <span class="value text-warning" id="val-reports">--</span>
-                                    </div>
-                                </div>
-
-                                <!-- Telemetry -->
-                                <div style="border-top:1px solid var(--glass-border); padding-top:1rem; margin-top:1rem;">
-                                    <h4 class="section-label">Platform Risk Telemetry</h4>
-                                    <div class="meta-grid">
-                                        <div class="stat-box">
-                                            <span class="label">Queue Depth</span>
-                                            <span class="value" id="val-queue-depth">--</span>
-                                        </div>
-                                        <div class="stat-box">
-                                            <span class="label">Avg Harm</span>
-                                            <span class="value" id="val-avg-harm">--</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <hr class="divider">
-
-                                <!-- Moderation Override Form -->
-                                <div class="panel-header" style="padding: 0; background: transparent; border: none; margin-bottom: 1rem;">
-                                    <h3><i class="fa-solid fa-sliders"></i> Moderation Override</h3>
-                                </div>
-
-                                <div id="action-panel">
-                                    <!-- Rendered form -->
-                                </div>
-
-                                <!-- Agent Execution Box -->
-                                <div class="auto-agent-box">
-                                    <h4><i class="fa-solid fa-robot"></i> Advanced Execution</h4>
-                                    <p class="text-muted text-sm">Transfer control to the autonomous agent. Single step or enable Continuous RL Training mode.</p>
-                                    <div class="agent-btns">
-                                        <button class="btn btn-outline" id="btn-run-agent" onclick="app.runAgent(false)">
-                                            <i class="fa-solid fa-play"></i> Single Step
-                                        </button>
-                                        <button class="btn btn-ai" id="btn-auto-loop" onclick="app.toggleAutoLoop()">
-                                            <i class="fa-solid fa-infinity"></i> Start Auto-Training Loop
-                                        </button>
-                                    </div>
-                                </div>
+                            <div class="stat-item">
+                                <p class="label">Account Integrity</p>
+                                <p id="val-user-age" class="value">--</p>
+                            </div>
+                            <div class="stat-item">
+                                <p class="label">Historical Incidents</p>
+                                <p id="val-prior-violations" class="value text-danger">--</p>
+                            </div>
+                            <div class="stat-item">
+                                <p class="label">Community Reports</p>
+                                <p id="val-reports" class="value">--</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Column 2: Terminal -->
-                    <div class="workspace-col fade-in delay-1">
-                        <div class="glass-panel panel-content h-full terminal-wrapper" style="display:flex; flex-direction:column;">
-                            <div class="terminal-header">
-                                <span class="dot red"></span>
-                                <span class="dot yellow"></span>
-                                <span class="dot green"></span>
-                                <div class="terminal-title">agent-trace.sh</div>
-                                <button class="btn btn-icon terminal-clear" onclick="app.clearTerminal()" title="Clear terminal">
-                                    <i class="fa-solid fa-trash-can"></i>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Submission Interface</h3>
+                            <span class="badge">Decisive Mode</span>
+                        </div>
+                        <div id="action-panel">
+                            <!-- Rendered by app.js -->
+                        </div>
+
+                        <div class="auto-agent-box">
+                            <div class="card-header" style="margin-bottom: 8px;">
+                                <h4>Autonomous Execution Engine</h4>
+                            </div>
+                            <p class="text-secondary text-sm" style="margin-bottom: 16px;">
+                                Hand over control to the AI Policy Judge. Enable Continuous Training for autonomous RL cycles.
+                            </p>
+                            <div class="agent-btns">
+                                <button class="btn btn-secondary" id="btn-run-agent" onclick="app.runAgent(false)">
+                                    <i class="fa-solid fa-play"></i> Run Inference
+                                </button>
+                                <button class="btn btn-primary" id="btn-auto-loop" onclick="app.toggleAutoLoop()">
+                                    <i class="fa-solid fa-bolt"></i> Training Loop
                                 </button>
                             </div>
-                            <div class="terminal-body scrollable" id="terminal-output">
-                                <div class="log-line">> Initiating OpenEnv environment context...</div>
-                                <div class="log-line">> Waiting for execution command.</div>
-                            </div>
-
-                            <!-- Reward Overlay -->
-                            <div class="reward-overlay" id="reward-overlay" style="display:none;">
-                                <div class="reward-ring" id="reward-display">0.0</div>
-                                <h4 style="margin-bottom:0.5rem;">Grade Received</h4>
-                                <div class="feedback-text text-sm" id="feedback-display">...</div>
-                                <button class="btn btn-outline" style="margin-top:1.5rem;" onclick="app.closeReward()">Dismiss</button>
-                            </div>
                         </div>
                     </div>
+                </section>
 
-                </div>
+                <!-- COLUMN 2: Insights Engine -->
+                <section class="view-col" style="padding:0;">
+                    <div class="terminal-card">
+                        <div class="terminal-header">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                            <span class="terminal-title">POLICY_TRACE_OVERSIGHT</span>
+                            <button class="btn-icon" style="margin-left: auto;" onclick="app.clearTerminal()">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div class="terminal-body" id="terminal-output">
+                            <!-- Live Streams -->
+                        </div>
+
+                        <!-- Reward Feedback Overlay -->
+                        <div class="reward-overlay" id="reward-overlay" style="display:none;">
+                            <span id="reward-display" class="reward-score">0.00</span>
+                            <h3 class="text-primary">Judicial Alignment Captured</h3>
+                            <div id="feedback-display" class="feedback-bubble">...</div>
+                            <button class="btn btn-secondary" style="width: auto; padding: 12px 24px;" onclick="app.closeReward()">Dismiss Signal</button>
+                        </div>
+                    </div>
+                </section>
+
             </div>
+        </main>
+    </div>
 
-        </div><!-- /main-content -->
-    </div><!-- /app-shell -->
-
-    <!-- Settings Modal -->
+    <!-- CREDENTIAL MODAL -->
     <div class="modal-overlay" id="settings-modal" style="display:none;">
-        <div class="glass-panel modal-content box-glow">
-            <div class="panel-header">
-                <h3><i class="fa-solid fa-key"></i> Remote Inference Settings</h3>
-                <button class="btn btn-icon" onclick="app.toggleSettings()">
+        <div class="card" style="width: 480px; margin: 0; animation: fadeIn 0.3s var(--spring-snappy);">
+            <div class="card-header">
+                <h3>Developer Credentials</h3>
+                <button class="btn-icon" onclick="app.toggleSettings()">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="panel-body">
-                <p class="text-xs text-muted" style="margin-bottom:1.5rem;">Judges can provide their own credentials for evaluation. These are stored locally and transmitted only for current session tasks.</p>
+            <div class="panel-body" style="padding-top: 0;">
+                <p class="text-secondary text-sm" style="margin-bottom: 24px;">
+                    Environment supports high-speed injection of custom OpenAI or Hugging Face tokens for personalized judicial evaluation.
+                </p>
 
                 <div class="form-group">
-                    <label>API Key / HF Token</label>
+                    <label>Standard API Key / HF Token</label>
                     <input type="password" id="cfg-api-key" placeholder="hf_... or sk-...">
                 </div>
                 <div class="form-group">
-                    <label>Inference Base URL</label>
-                    <input type="text" id="cfg-base-url" placeholder="https://api-inference.huggingface.co/v1">
+                    <label>Gateway Port Base URL</label>
+                    <input type="text" id="cfg-base-url" placeholder="https://api.openai.com/v1">
                 </div>
                 <div class="form-group">
-                    <label>Target Model</label>
-                    <input type="text" id="cfg-model" placeholder="meta-llama/Llama-3-70b-instruct">
+                    <label>Policy Ingest Model</label>
+                    <input type="text" id="cfg-model" placeholder="gpt-4o-mini">
                 </div>
 
-                <div class="modal-actions">
-                    <button class="btn btn-ai w-full" onclick="app.saveSettings()">Save & Activate</button>
-                    <button class="btn btn-outline" onclick="app.clearSettings()">Reset Default</button>
+                <div class="agent-btns" style="margin-top: 24px;">
+                    <button class="btn btn-primary" style="flex: 2;" onclick="app.saveSettings()">Activate Credentials</button>
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="app.clearSettings()">Clear</button>
                 </div>
             </div>
         </div>
