@@ -14,13 +14,14 @@ Key Features:
 
 import os
 import json
+import time
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
 
 import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -52,6 +53,7 @@ sessions: Dict[str, ContentGuardEnv] = {}
 DEFAULT_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 DEFAULT_API_KEY = os.environ.get("HF_TOKEN") or os.environ.get("OPENAI_API_KEY")
+BUILD_TAG = os.environ.get("HF_SPACE_SHA") or os.environ.get("SPACE_BUILD_TAG") or os.environ.get("BUILD_TAG") or str(int(time.time()))
 
 
 def _is_placeholder_api_key(api_key: Optional[str]) -> bool:
@@ -114,6 +116,17 @@ class ResetRequest(BaseModel):
 class StepRequest(BaseModel):
     action: Dict[str, Any] = Field(..., description="Agent moderation decision package")
 
+
+@app.middleware("http")
+async def disable_cache_for_dashboard_assets(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def serve_dashboard():
     """Serves the primary autonomous monitoring interface."""
@@ -121,7 +134,10 @@ async def serve_dashboard():
     if not os.path.exists(index_path):
         return HTMLResponse("ContentGuard Dashboard: Static assets not found. Check /server/static deployment.")
     with open(index_path, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+        html = f.read()
+    html = html.replace('/static/style.css', f'/static/style.css?v={BUILD_TAG}', 1)
+    html = html.replace('/static/app.js', f'/static/app.js?v={BUILD_TAG}', 1)
+    return HTMLResponse(content=html)
 
 @app.post("/reset", tags=["Core API"])
 async def reset_environment(req: ResetRequest = ResetRequest()):
