@@ -286,8 +286,15 @@ async def grade_action_async(
 
     except Exception as e:
         # Robust Fallback to Heuristic Grader
+        err_text = str(e)
+        lowered = err_text.lower()
+        if "invalid_api_key" in lowered or "incorrect api key" in lowered or "api key" in lowered or "401" in lowered:
+            err_text = "Authentication failed for the configured provider."
+        elif "model" in lowered and "not found" in lowered:
+            err_text = "Configured model is unavailable for the selected provider."
+
         reward, feedback, rationale = grade_action(action, ground_truth, task_id, case)
-        return reward, f"[FALLBACK] {feedback} (AI Judge Error: {str(e)})", rationale
+        return reward, f"[FALLBACK] {feedback} (AI Judge Error: {err_text})", rationale
 
 
 def grade_action(

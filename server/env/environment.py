@@ -7,7 +7,6 @@ social media content moderation — the same challenge Meta faces at
 """
 
 import uuid
-import uuid
 import random
 from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field

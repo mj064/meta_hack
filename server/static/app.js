@@ -10,6 +10,8 @@ const app = {
     terminalActiveLine: null,
     typewriterTimeout: null,
     isAutoTraining: false,
+    autoRunAfterReset: false,
+    episodeDone: false,
     metrics: { count: 0, sumReward: 0 },
     scrollPending: false,
 
@@ -52,7 +54,14 @@ const app = {
         };
         
         this.ws.onmessage = (e) => {
-            const data = JSON.parse(e.data);
+            let data;
+            try {
+                data = JSON.parse(e.data);
+            } catch (_) {
+                this.terminalPrint('[ALERT] Invalid telemetry packet received from gateway.');
+                return;
+            }
+
             if (data.type === 'reset') {
                 this.handleReset(data.observation);
             } else if (data.type === 'stream') {
@@ -60,9 +69,7 @@ const app = {
             } else if (data.type === 'step') {
                 this.handleStep(data.result);
             } else if (data.type === 'error') {
-                this.terminalPrint(`[ALERT] Internal Error: ${data.message}`);
-                // Professional Toast instead of alert
-                console.error("Vault Error:", data.message);
+                this.handleServerError(data.message || 'Unspecified gateway error.');
             }
         };
     },
@@ -70,6 +77,9 @@ const app = {
     // ===== OPERATIONAL FLOW =====
     startEpisode: function(taskId) {
         this.currentTask = taskId;
+        this.autoRunAfterReset = false;
+        this.episodeDone = false;
+        this.currentEpisodeId = null;
         
         // Update Sidebar States
         document.querySelectorAll('.nav-item[data-task]').forEach(btn => {
@@ -79,6 +89,13 @@ const app = {
         // Update Workspace Context
         const labels = { easy: 'Tier I: Detection', medium: 'Tier II: Action', hard: 'Tier III: Adjudication' };
         document.getElementById('breadcrumb-task').textContent = labels[taskId] || taskId;
+
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            this.terminalPrint('WARNING: Gateway link is not ready. Wait for LINK ACTIVE before starting.');
+            return;
+        }
+
+        this.setAgentButtonsIdle();
 
         const config = JSON.parse(sessionStorage.getItem('env_config') || '{}');
         this.ws.send(JSON.stringify({ 
@@ -97,6 +114,7 @@ const app = {
 
     handleReset: function(obs) {
         this.currentEpisodeId = obs.episode_id;
+        this.episodeDone = false;
         const c = obs.content_case;
         const b = obs.policy_briefing;
 
@@ -122,6 +140,13 @@ const app = {
         this.typeWriterEffect('val-content', `"${c.content}"`, 10);
         this.renderActionForm(obs.action_space);
         this.terminalPrint(`INFO: Ingesting context payload. Case ID: ${c.post_id}`);
+
+        if (this.autoRunAfterReset && this.isAutoTraining) {
+            this.autoRunAfterReset = false;
+            setTimeout(() => {
+                if (this.isAutoTraining) this.runAgent(true);
+            }, 180);
+        }
     },
 
     updateMetric: function(id, val) {
@@ -160,6 +185,15 @@ const app = {
     },
 
     submitAction: function() {
+        if (!this.currentEpisodeId || this.episodeDone) {
+            this.terminalPrint('NOTICE: Active episode required. Start a tier to submit a ruling.');
+            return;
+        }
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            this.terminalPrint('WARNING: Gateway link is not ready.');
+            return;
+        }
+
         const payload = {};
         const inputs = document.querySelectorAll('[id^="input-"]');
         inputs.forEach(input => {
@@ -181,16 +215,40 @@ const app = {
             btn.innerHTML = '<i class="fa-solid fa-stop"></i> Terminate Loop';
             btn.style.background = 'var(--zinc-50)';
             btn.style.color = 'var(--zinc-950)';
+
+            if (!this.currentTask) {
+                this.stopAutoLoop('NOTICE: Pick an environment tier before enabling training loop.');
+                return;
+            }
+
+            if (!this.currentEpisodeId || this.episodeDone) {
+                this.autoRunAfterReset = true;
+                this.startEpisode(this.currentTask);
+                return;
+            }
+
             this.runAgent(true);
         } else {
-            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Training Loop';
-            btn.style.background = '';
-            btn.style.color = '';
-            this.terminalPrint(`\nNOTICE: Autonomous training loop halted.`);
+            this.stopAutoLoop('\nNOTICE: Autonomous training loop halted.');
         }
     },
     
     runAgent: function(isLooping) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            this.stopAutoLoop('WARNING: Gateway link unavailable. Reconnect and retry.');
+            return;
+        }
+
+        if (!this.currentEpisodeId || this.episodeDone) {
+            if (isLooping && this.currentTask) {
+                this.autoRunAfterReset = true;
+                this.startEpisode(this.currentTask);
+            } else {
+                this.terminalPrint('NOTICE: Episode finished. Start a tier to create a new case.');
+            }
+            return;
+        }
+
         this.terminalPrint(`\nINFO: AI Judge invoked for Judicial Evaluation.`);
         
         const term = document.getElementById('terminal-output');
@@ -206,6 +264,44 @@ const app = {
 
         // Kinetic Active State
         document.querySelectorAll('.card').forEach(c => c.style.borderColor = 'var(--indigo-500)');
+    },
+
+    setAgentButtonsIdle: function() {
+        const runBtn = document.getElementById('btn-run-agent');
+        const loopBtn = document.getElementById('btn-auto-loop');
+        if (runBtn) runBtn.disabled = false;
+        if (loopBtn) {
+            loopBtn.disabled = false;
+            if (this.isAutoTraining) {
+                loopBtn.innerHTML = '<i class="fa-solid fa-stop"></i> Terminate Loop';
+                loopBtn.style.background = 'var(--zinc-50)';
+                loopBtn.style.color = 'var(--zinc-950)';
+            } else {
+                loopBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Training Loop';
+                loopBtn.style.background = '';
+                loopBtn.style.color = '';
+            }
+        }
+    },
+
+    stopAutoLoop: function(message) {
+        this.isAutoTraining = false;
+        this.autoRunAfterReset = false;
+        this.setAgentButtonsIdle();
+        if (message) this.terminalPrint(message);
+    },
+
+    handleServerError: function(message) {
+        const text = message || 'Unknown internal error';
+        this.terminalPrint(`[ALERT] Internal Error: ${text}`);
+        console.error('ContentGuard Error:', text);
+
+        const lowered = text.toLowerCase();
+        if (lowered.includes('episode finished') || lowered.includes('reset()') || lowered.includes('api key') || lowered.includes('authentication')) {
+            this.stopAutoLoop('NOTICE: Loop paused due to gateway guard. Resetting case is required.');
+        } else {
+            this.setAgentButtonsIdle();
+        }
     },
     
     handleStreamChunk: function(content) {
@@ -234,31 +330,32 @@ const app = {
             this.terminalActiveLine = null;
         }
 
+        this.episodeDone = true;
+
         // Reset Kinetic States
         document.querySelectorAll('.card').forEach(c => c.style.borderColor = '');
 
         const scoreDisplay = document.getElementById('reward-display');
         const title = document.getElementById('diagnostic-title');
-        const rw = result.reward;
-        const feedback = result.info.feedback || "";
+        const parsedReward = Number(result.reward);
+        const rw = Number.isFinite(parsedReward) ? parsedReward : 0;
+        const feedback = (result.info && result.info.feedback) ? result.info.feedback : "";
         
         // --- Credential Interceptor (Vanguard Logic) ---
-        const isAuthError = feedback.includes("401") || feedback.includes("Invalid API key") || feedback.includes("Incorrect API key");
+        const feedbackLower = feedback.toLowerCase();
+        const isAuthError = feedbackLower.includes("401") || feedbackLower.includes("invalid api key") || feedbackLower.includes("incorrect api key") || feedbackLower.includes("authentication failed");
         
         if (isAuthError) {
             this.terminalPrint("ALERT: Security Handshake Failed. Halting operations.");
-            this.isAutoTraining = false; // Kill loop
+            this.stopAutoLoop();
             title.textContent = "SECURITY_HANDSHAKE_FAILED";
             title.style.color = "var(--rose-500)";
             scoreDisplay.textContent = "FAULT";
             scoreDisplay.style.color = "var(--rose-500)";
-            document.getElementById('btn-auto-loop').innerHTML = '<i class="fa-solid fa-bolt"></i> Training Loop';
-            document.getElementById('btn-auto-loop').style.background = '';
-            document.getElementById('btn-auto-loop').style.color = '';
         } else {
             title.textContent = "Judicial Alignment Captured";
             title.style.color = "var(--indigo-500)";
-            scoreDisplay.textContent = rw.toFixed(4);
+            scoreDisplay.textContent = Number.isFinite(rw) ? rw.toFixed(4) : '0.0000';
             
             // Dynamic Grading Color
             if (rw >= 0.8) scoreDisplay.style.color = 'var(--emerald-500)';
@@ -268,9 +365,7 @@ const app = {
 
         document.getElementById('feedback-display').textContent = feedback;
         document.getElementById('reward-overlay').style.display = 'flex';
-        
-        document.getElementById('btn-run-agent').disabled = false;
-        document.getElementById('btn-auto-loop').disabled = false;
+        this.setAgentButtonsIdle();
         
         // HUD Stats Update
         this.metrics.count++;
@@ -282,7 +377,12 @@ const app = {
             setTimeout(() => {
                 if (this.isAutoTraining) {
                     this.closeReward();
-                    setTimeout(() => { if (this.isAutoTraining) this.runAgent(true); }, 400);
+                    if (this.currentTask) {
+                        this.autoRunAfterReset = true;
+                        this.startEpisode(this.currentTask);
+                    } else {
+                        this.stopAutoLoop('NOTICE: Training loop paused because no tier is selected.');
+                    }
                 }
             }, 1800);
         }
