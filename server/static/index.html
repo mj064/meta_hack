@@ -89,6 +89,17 @@
                 </div>
             </header>
 
+            <div class="workspace-tabs" id="workspace-tabs">
+                <button class="workspace-tab active" data-tab="arena" onclick="app.switchTab('arena')">
+                    <i class="fa-solid fa-wave-square"></i>
+                    <span>Arena</span>
+                </button>
+                <button class="workspace-tab" data-tab="history" onclick="app.switchTab('history')">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>History</span>
+                </button>
+            </div>
+
             <section class="page-content" id="landing-page">
                 <div class="landing-hero card fade-in">
                     <p class="hero-kicker">Realtime moderation arena</p>
@@ -212,6 +223,28 @@
                     </div>
                 </section>
             </div>
+
+            <section class="history-page" id="history-page" style="display: none;">
+                <div class="history-grid">
+                    <article class="card history-chart-card">
+                        <div class="card-header">
+                            <h3>Accuracy Graph</h3>
+                            <span class="badge" id="history-summary">No Episodes</span>
+                        </div>
+                        <canvas id="accuracy-chart" width="900" height="240"></canvas>
+                    </article>
+
+                    <article class="card history-log-card">
+                        <div class="card-header">
+                            <h3>Prediction History</h3>
+                            <button class="btn-icon" onclick="app.clearHistory()" title="Clear history">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div id="history-list" class="history-list"></div>
+                    </article>
+                </div>
+            </section>
         </main>
     </div>
 
