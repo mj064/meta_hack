@@ -84,9 +84,7 @@ const app = {
             return;
         }
 
-        this.closeReward(true);
-        this.terminalPrint('LOG: Quick-cycle trigger received (/). Starting a new episode...');
-        this.startEpisode(this.currentTask);
+        this.closeReward(true, true);
     },
 
     connectWS: function() {
@@ -375,7 +373,7 @@ const app = {
         if (!this.scrollPending) {
             this.scrollPending = true;
             requestAnimationFrame(() => {
-                this.scrollOversightToBottom(false);
+                this.scrollOversightToBottom(true);
                 this.scrollPending = false;
             });
         }
@@ -445,8 +443,16 @@ const app = {
         }
     },
     
-    closeReward: function(silent) {
+    closeReward: function(silent, autoStartNext) {
         document.getElementById('reward-overlay').style.display = 'none';
+
+        const shouldAutoStart = !!this.currentTask && (autoStartNext === true || (!this.isAutoTraining && this.episodeDone));
+        if (shouldAutoStart) {
+            this.terminalPrint('LOG: Dismiss received. Starting next episode...');
+            this.startEpisode(this.currentTask);
+            return;
+        }
+
         if (!silent && !this.isAutoTraining) {
             this.terminalPrint(`LOG: Alignment evaluation captured and dismissed.`);
         }

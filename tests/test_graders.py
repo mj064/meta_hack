@@ -12,7 +12,8 @@ async def test_grade_easy_perfect_match():
     action = {"violation": "hate_speech"}
     ground_truth = {"violation": "hate_speech"}
     reward, feedback, rationale = await grade_action_async(action, ground_truth, "easy", {})
-    assert reward == 1.0
+    # Rewards are intentionally bounded by _smooth_reward to [0.05, 0.95].
+    assert reward == 0.95
     assert "Perfect" in feedback
     assert "Section 12" in rationale
 

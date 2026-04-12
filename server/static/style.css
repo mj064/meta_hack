@@ -413,6 +413,11 @@ body::after {
     gap: 22px;
 }
 
+#main-interface {
+    height: 100%;
+    min-height: 0;
+}
+
 .landing-hero {
     border: 1px solid rgba(15, 159, 155, 0.18);
     background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(255, 248, 238, 0.8));
@@ -509,6 +514,8 @@ body::after {
     grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
     gap: 0;
     min-height: 0;
+    height: 100%;
+    align-items: stretch;
     overflow: hidden;
 }
 
@@ -517,7 +524,7 @@ body::after {
     flex-direction: column;
     gap: var(--hud-gap);
     padding: var(--hud-gap);
-    overflow-y: auto;
+    overflow-y: hidden;
     min-width: 0;
     min-height: 0;
 }
@@ -669,10 +676,15 @@ body::after {
     font-family: 'IBM Plex Mono', monospace;
     color: var(--ink-800);
     font-weight: 500;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 #action-panel {
     display: block;
+    max-height: 30vh;
+    overflow-y: auto;
+    padding-right: 2px;
 }
 
 #action-panel .stat-grid {
@@ -869,6 +881,7 @@ body::after {
     color: rgba(219, 233, 239, 0.9);
     position: relative;
     min-height: 0;
+    overscroll-behavior: contain;
 }
 
 .log-line {
@@ -972,6 +985,8 @@ body::after {
 .text-sm {
     font-size: 0.84rem;
     line-height: 1.6;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 ::-webkit-scrollbar {
@@ -1137,6 +1152,10 @@ body::after {
     .view-col {
         padding: 20px;
         gap: 18px;
+    }
+
+    .view-col {
+        overflow-y: auto;
     }
 }
 

@@ -4,26 +4,52 @@ Synthetic & Hugging Face content case generator for ContentGuardEnv.
 Generates realistic social media posts with associated metadata,
 user account history, and ground-truth moderation decisions.
 Integrates natively with Hugging Face datasets.
+
+By default, external dataset loading is disabled to keep startup/test
+paths deterministic. Enable with CONTENT_GUARD_USE_HF_DATA=1.
 """
 
+import os
 import random
 import copy
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Attempt to load Real World Data from Hugging Face
-HF_DATA = None
+HF_DATASET = None
+_HF_DATA_ATTEMPTED = False
+_HF_DATA_ENABLED = os.getenv("CONTENT_GUARD_USE_HF_DATA", "0").strip().lower() in {"1", "true", "yes", "on"}
+
 try:
-    from datasets import load_dataset
-    logger.info("Initializing Hugging Face Datasets connection...")
-    # Load a small, highly relevant dataset of flagged conversational text
-    hf_dataset = load_dataset("SetFit/toxic_conversations", split="train")
-    HF_DATA = list(hf_dataset)
-    logger.info(f"Loaded {len(HF_DATA)} real evaluation cases from Hugging Face!")
-except Exception as e:
-    logger.warning(f"Could not load Hugging Face dataset (will use synthetic): {str(e)}")
+    from datasets import load_dataset as _hf_load_dataset
+except Exception:
+    _hf_load_dataset = None
+
+
+def _maybe_load_hf_data() -> None:
+    """Lazy one-time dataset initialization to avoid import-time blocking."""
+    global HF_DATASET, _HF_DATA_ATTEMPTED
+
+    if _HF_DATA_ATTEMPTED:
+        return
+    _HF_DATA_ATTEMPTED = True
+
+    if not _HF_DATA_ENABLED:
+        logger.info("Hugging Face dataset disabled (CONTENT_GUARD_USE_HF_DATA=0). Using synthetic cases.")
+        return
+    if _hf_load_dataset is None:
+        logger.warning("datasets package unavailable; using synthetic cases.")
+        return
+
+    try:
+        logger.info("Initializing Hugging Face Datasets connection...")
+        # Keep dataset bounded for memory and faster cold starts.
+        HF_DATASET = _hf_load_dataset("SetFit/toxic_conversations", split="train[:1000]")
+        logger.info(f"Loaded {len(HF_DATASET)} Hugging Face evaluation records.")
+    except Exception as e:
+        logger.warning(f"Could not load Hugging Face dataset (falling back to synthetic): {str(e)}")
+        HF_DATASET = None
 
 
 # ── Post templates (Fallback / Structure) ──────────────────────────────────────
@@ -83,7 +109,10 @@ DEVICE_TYPES = ["mobile_ios", "mobile_android", "desktop_web", "desktop_app"]
 
 def get_real_hf_case() -> Tuple[str, str, int, str]:
     """Pulls a random record from the real Hugging Face dataset."""
-    record = random.choice(HF_DATA)
+    if HF_DATASET is None or len(HF_DATASET) == 0:
+        raise ValueError("HF dataset is not initialized.")
+
+    record = HF_DATASET[random.randrange(len(HF_DATASET))]
     # SetFit/toxic_conversations uses 'text' and 'label' (0=safe, 1=toxic)
     content = record.get("text", "")
     is_toxic = record.get("label", 0) == 1
@@ -105,10 +134,11 @@ def generate_case(task_id: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Generate a content moderation case leveraging real HF data if available."""
     
     # 1. Base Meta structure
-    template = random.choice(POSTS)
+    template = copy.deepcopy(random.choice(POSTS))
+    _maybe_load_hf_data()
     
     # 2. Content & Ground Truth assignment
-    if HF_DATA:
+    if HF_DATASET is not None and len(HF_DATASET) > 0:
         # Real AI Training Data Path
         content, violation, severity, action = get_real_hf_case()
         template["violation"] = violation
