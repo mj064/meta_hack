@@ -184,7 +184,11 @@ const app = {
         document.getElementById('btn-run-agent').style.opacity = '0.5';
         document.getElementById('btn-auto-loop').disabled = true;
         
-        this.ws.send(JSON.stringify({ action: "run_agent" }));
+        const config = JSON.parse(sessionStorage.getItem('env_config') || '{}');
+        this.ws.send(JSON.stringify({ 
+            action: "run_agent",
+            config: config
+        }));
     },
     
     handleStreamChunk: function(content) {

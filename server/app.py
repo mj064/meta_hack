@@ -128,30 +128,25 @@ async def policy_trace_socket(websocket: WebSocket):
                 continue
 
             cmd = msg.get("action")
+            # Elite v3.9: Universal Credential Injector
+            cfg = msg.get("config", {})
+            if cfg.get("api_key"):
+                api_key = cfg["api_key"]
+                base_url = cfg.get("base_url") or "https://api.openai.com/v1"
+                
+                # Intelligent Router logic
+                if api_key.startswith("hf_") and "openai.com" in base_url:
+                    base_url = "https://api-inference.huggingface.co/v1"
+                
+                session_client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+                session_model = cfg.get("model") or (MODEL_NAME if "openai.com" in base_url else "meta-llama/Llama-3-70b-instruct")
+            elif session_client is None:
+                session_client = aclient
+                session_model = MODEL_NAME
+
             if cmd == "reset":
                 env = ContentGuardEnv()
                 try:
-                    # Capture session-specific credentials (v3.3)
-                    cfg = msg.get("config", {})
-                    if cfg.get("api_key"):
-                        api_key = cfg["api_key"]
-                        base_url = cfg.get("base_url") or "https://api.openai.com/v1"
-                        
-                        # Elite v3.5: Intelligent Router logic
-                        if api_key.startswith("hf_") and "openai.com" in base_url:
-                            print(f"🔄 [ROUTER] HF Token detected. Routing to Hugging Face Inference API.")
-                            base_url = "https://api-inference.huggingface.co/v1"
-                        
-                        print(f"🔑 [SECURITY] Session key detected. Initializing temporary judge client.")
-                        session_client = AsyncOpenAI(
-                            api_key=api_key,
-                            base_url=base_url
-                        )
-                        session_model = cfg.get("model") or (MODEL_NAME if "openai.com" in base_url else "meta-llama/Llama-3-70b-instruct")
-                    else:
-                        session_client = aclient
-                        session_model = MODEL_NAME
-
                     obs = env.reset(task_id=msg.get("task_id", "easy"))
                     # Explicitly dump Pydantic model for WebSocket JSON serialization
                     await websocket.send_json({"type": "reset", "observation": obs.model_dump()})
