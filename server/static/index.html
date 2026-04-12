@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE VAULT | ContentGuard Operations</title>
-    <!-- High-Fidelity Typography -->
+    <title>ContentGuard Supreme Console</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
-    <!-- Dynamic Environment Layer -->
     <canvas id="fluid-canvas"></canvas>
     <div class="scanline"></div>
+    <div class="ambient-orb orb-a"></div>
+    <div class="ambient-orb orb-b"></div>
 
     <div class="app-shell">
-        
-        <!-- SIDEBAR: Operational Control -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo-icon">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div class="brand-info">
-                    <h1 class="brand-text">THE VAULT</h1>
-                    <p class="nav-label">Moderation HQ</p>
+                    <h1 class="brand-text">ContentGuard</h1>
+                    <p class="brand-subtitle">Supreme Ops Console</p>
                 </div>
+            </div>
+
+            <div class="sidebar-intro">
+                <p class="nav-label">Control Plane</p>
+                <p class="text-secondary text-sm">Run policy simulations, submit rulings, and train your autonomous moderation loop.</p>
             </div>
 
             <nav class="sidebar-nav">
@@ -87,18 +89,41 @@
                 </div>
             </header>
 
-            <!-- Landing Page -->
             <section class="page-content" id="landing-page">
-                <div class="landing-hero fade-in">
-                    <h2 class="landing-title">Autonomous Oversight Interface</h2>
-                    <p class="text-secondary landing-subtitle">Select an operational tier from the control strip to begin real-time policy evaluation.</p>
+                <div class="landing-hero card fade-in">
+                    <p class="hero-kicker">Realtime moderation arena</p>
+                    <h2 class="landing-title">Premium policy operations with live RL feedback</h2>
+                    <p class="text-secondary landing-subtitle">Select an operational tier from the left control plane to begin full-fidelity moderation evaluation.</p>
+                    <div class="hero-pills">
+                        <span class="hero-pill"><i class="fa-solid fa-wave-square"></i> Streaming trace</span>
+                        <span class="hero-pill"><i class="fa-solid fa-layer-group"></i> Multi-tier scenarios</span>
+                        <span class="hero-pill"><i class="fa-solid fa-brain"></i> Autonomous loop</span>
+                    </div>
+                </div>
+
+                <div class="landing-grid">
+                    <article class="card spotlight-card">
+                        <div class="card-header">
+                            <h3>Operational Flow</h3>
+                        </div>
+                        <ul class="spotlight-list">
+                            <li><span class="list-dot"></span>Bootstrap a tier and ingest a fresh policy case.</li>
+                            <li><span class="list-dot"></span>Submit deterministic action payloads for grading.</li>
+                            <li><span class="list-dot"></span>Inspect reward, narrative feedback, and trace logs.</li>
+                        </ul>
+                    </article>
+
+                    <article class="card spotlight-card">
+                        <div class="card-header">
+                            <h3>Model Routing</h3>
+                            <span class="badge">OpenAI + HF</span>
+                        </div>
+                        <p class="text-secondary text-sm">Use API credentials to switch providers. HF tokens can auto-route to the Inference API gateway for faster testing.</p>
+                    </article>
                 </div>
             </section>
 
-            <!-- Evaluation Workspace -->
             <div class="workspace" id="main-interface" style="display: none;">
-                
-                <!-- COLUMN 1: Case Port -->
                 <section class="view-col">
                     <div class="alert-banner" id="policy-alert-banner">
                         <span class="alert-badge" id="alert-level">STABLE</span>
@@ -143,14 +168,13 @@
                             <span class="badge">Decisive Mode</span>
                         </div>
                         <div id="action-panel">
-                            <!-- Rendered by app.js -->
                         </div>
 
                         <div class="auto-agent-box">
-                            <div class="card-header" style="margin-bottom: 8px;">
+                            <div class="card-header compact-header">
                                 <h4>Autonomous Execution Engine</h4>
                             </div>
-                            <p class="text-secondary text-sm" style="margin-bottom: 16px;">
+                            <p class="text-secondary text-sm section-copy">
                                 Hand over control to the AI Policy Judge. Enable Continuous Training for autonomous RL cycles.
                             </p>
                             <div class="agent-btns">
@@ -165,47 +189,42 @@
                     </div>
                 </section>
 
-                <!-- COLUMN 2: Insights Engine -->
-                <section class="view-col" style="padding:0;">
-                    <div class="terminal-card">
+                <section class="view-col terminal-column">
+                    <div class="terminal-card card">
                         <div class="terminal-header">
                             <span class="dot red"></span>
                             <span class="dot yellow"></span>
                             <span class="dot green"></span>
                             <span class="terminal-title">POLICY_TRACE_OVERSIGHT</span>
-                            <button class="btn-icon" style="margin-left: auto;" onclick="app.clearTerminal()">
+                            <button class="btn-icon" onclick="app.clearTerminal()">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
                         <div class="terminal-body" id="terminal-output">
-                            <!-- Live Streams -->
                         </div>
 
-                        <!-- Diagnostic Port (Refactored Outcome Overlay) -->
                         <div class="reward-overlay" id="reward-overlay" style="display:none;">
                             <span id="reward-display" class="reward-score">0.00</span>
                             <h3 id="diagnostic-title" class="text-primary">Judicial Alignment Captured</h3>
                             <div id="feedback-display" class="feedback-bubble">...</div>
-                            <button class="btn btn-secondary" style="width: auto; padding: 12px 24px;" onclick="app.closeReward()">Dismiss Signal</button>
+                            <button class="btn btn-secondary" onclick="app.closeReward()">Dismiss Signal</button>
                         </div>
                     </div>
                 </section>
-
             </div>
         </main>
     </div>
 
-    <!-- CREDENTIAL MODAL -->
     <div class="modal-overlay" id="settings-modal" style="display:none;">
-        <div class="card" style="width: 480px; margin: 0; animation: fadeIn 0.3s var(--spring-snappy);">
+        <div class="card modal-card">
             <div class="card-header">
                 <h3>Developer Credentials</h3>
                 <button class="btn-icon" onclick="app.toggleSettings()">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="panel-body" style="padding-top: 0;">
-                <p class="text-secondary text-sm" style="margin-bottom: 24px;">
+            <div class="panel-body">
+                <p class="text-secondary text-sm section-copy">
                     Environment supports high-speed injection of custom OpenAI or Hugging Face tokens for personalized judicial evaluation.
                 </p>
 
@@ -222,9 +241,9 @@
                     <input type="text" id="cfg-model" placeholder="gpt-4o-mini">
                 </div>
 
-                <div class="agent-btns" style="margin-top: 24px;">
-                    <button class="btn btn-primary" style="flex: 2;" onclick="app.saveSettings()">Activate Credentials</button>
-                    <button class="btn btn-secondary" style="flex: 1;" onclick="app.clearSettings()">Clear</button>
+                <div class="agent-btns modal-actions">
+                    <button class="btn btn-primary" onclick="app.saveSettings()">Activate Credentials</button>
+                    <button class="btn btn-secondary" onclick="app.clearSettings()">Clear</button>
                 </div>
             </div>
         </div>

@@ -20,7 +20,26 @@ def deploy():
             repo_id=repo_id,
             repo_type="space",
             token=token,
-            ignore_patterns=[".env*", ".git*", "__pycache__*", "*.pyc", ".gemini*", "deploy_to_hf.py"]
+            ignore_patterns=[
+                ".env*",
+                ".git*",
+                ".venv*",
+                ".kombai*",
+                "content_guard_env.egg-info*",
+                ".pytest_cache*",
+                "__pycache__*",
+                "*.pyc",
+                ".gemini*",
+                "deploy_to_hf.py",
+            ],
+            delete_patterns=[
+                ".venv/**",
+                ".kombai/**",
+                "content_guard_env.egg-info/**",
+                ".pytest_cache/**",
+                "**/__pycache__/**",
+                "**/*.pyc",
+            ]
         )
         print("✅ SUCCESS! ContentGuardEnv is now LIVE on Hugging Face.")
     except Exception as e:
