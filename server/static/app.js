@@ -84,7 +84,14 @@ const app = {
             return;
         }
 
-        this.closeReward(true, true);
+        const overlay = document.getElementById('reward-overlay');
+        if (overlay) overlay.style.display = 'none';
+
+        this.terminalPrint('LOG: Quick-cycle trigger received (/). Starting next episode...');
+        if (this.isAutoTraining) {
+            this.autoRunAfterReset = true;
+        }
+        this.startEpisode(this.currentTask, { preserveAutoRun: this.isAutoTraining });
     },
 
     connectWS: function() {
@@ -130,9 +137,14 @@ const app = {
     },
 
     // ===== OPERATIONAL FLOW =====
-    startEpisode: function(taskId) {
+    startEpisode: function(taskId, options) {
+        const opts = options || {};
+        const preserveAutoRun = opts.preserveAutoRun === true;
+
         this.currentTask = taskId;
-        this.autoRunAfterReset = false;
+        if (!preserveAutoRun) {
+            this.autoRunAfterReset = false;
+        }
         this.episodeDone = false;
         this.currentEpisodeId = null;
         
@@ -278,7 +290,7 @@ const app = {
 
             if (!this.currentEpisodeId || this.episodeDone) {
                 this.autoRunAfterReset = true;
-                this.startEpisode(this.currentTask);
+                this.startEpisode(this.currentTask, { preserveAutoRun: true });
                 return;
             }
 
@@ -297,7 +309,7 @@ const app = {
         if (!this.currentEpisodeId || this.episodeDone) {
             if (isLooping && this.currentTask) {
                 this.autoRunAfterReset = true;
-                this.startEpisode(this.currentTask);
+                this.startEpisode(this.currentTask, { preserveAutoRun: true });
             } else {
                 this.terminalPrint('NOTICE: Episode finished. Start a tier to create a new case.');
             }
@@ -434,7 +446,7 @@ const app = {
                     this.closeReward();
                     if (this.currentTask) {
                         this.autoRunAfterReset = true;
-                        this.startEpisode(this.currentTask);
+                        this.startEpisode(this.currentTask, { preserveAutoRun: true });
                     } else {
                         this.stopAutoLoop('NOTICE: Training loop paused because no tier is selected.');
                     }
@@ -449,7 +461,7 @@ const app = {
         const shouldAutoStart = !!this.currentTask && (autoStartNext === true || (!this.isAutoTraining && this.episodeDone));
         if (shouldAutoStart) {
             this.terminalPrint('LOG: Dismiss received. Starting next episode...');
-            this.startEpisode(this.currentTask);
+            this.startEpisode(this.currentTask, { preserveAutoRun: this.isAutoTraining || this.autoRunAfterReset });
             return;
         }
 
