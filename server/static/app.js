@@ -203,6 +203,9 @@ const app = {
         
         const config = JSON.parse(sessionStorage.getItem('env_config') || '{}');
         this.ws.send(JSON.stringify({ action: "run_agent", config: config }));
+
+        // Kinetic Active State
+        document.querySelectorAll('.card').forEach(c => c.style.borderColor = 'var(--indigo-500)');
     },
     
     handleStreamChunk: function(content) {
@@ -231,16 +234,39 @@ const app = {
             this.terminalActiveLine = null;
         }
 
-        const rw = result.reward;
-        const scoreDisplay = document.getElementById('reward-display');
-        scoreDisplay.textContent = rw.toFixed(4);
-        
-        // Dynamic Grading Color
-        if (rw >= 0.8) scoreDisplay.style.color = 'var(--indigo-500)';
-        else if (rw >= 0.4) scoreDisplay.style.color = 'var(--warning)';
-        else scoreDisplay.style.color = 'var(--danger)';
+        // Reset Kinetic States
+        document.querySelectorAll('.card').forEach(c => c.style.borderColor = '');
 
-        document.getElementById('feedback-display').textContent = result.info.feedback;
+        const scoreDisplay = document.getElementById('reward-display');
+        const title = document.getElementById('diagnostic-title');
+        const rw = result.reward;
+        const feedback = result.info.feedback || "";
+        
+        // --- Credential Interceptor (Vanguard Logic) ---
+        const isAuthError = feedback.includes("401") || feedback.includes("Invalid API key") || feedback.includes("Incorrect API key");
+        
+        if (isAuthError) {
+            this.terminalPrint("ALERT: Security Handshake Failed. Halting operations.");
+            this.isAutoTraining = false; // Kill loop
+            title.textContent = "SECURITY_HANDSHAKE_FAILED";
+            title.style.color = "var(--rose-500)";
+            scoreDisplay.textContent = "FAULT";
+            scoreDisplay.style.color = "var(--rose-500)";
+            document.getElementById('btn-auto-loop').innerHTML = '<i class="fa-solid fa-bolt"></i> Training Loop';
+            document.getElementById('btn-auto-loop').style.background = '';
+            document.getElementById('btn-auto-loop').style.color = '';
+        } else {
+            title.textContent = "Judicial Alignment Captured";
+            title.style.color = "var(--indigo-500)";
+            scoreDisplay.textContent = rw.toFixed(4);
+            
+            // Dynamic Grading Color
+            if (rw >= 0.8) scoreDisplay.style.color = 'var(--emerald-500)';
+            else if (rw >= 0.4) scoreDisplay.style.color = 'var(--amber-500)';
+            else scoreDisplay.style.color = 'var(--rose-500)';
+        }
+
+        document.getElementById('feedback-display').textContent = feedback;
         document.getElementById('reward-overlay').style.display = 'flex';
         
         document.getElementById('btn-run-agent').disabled = false;

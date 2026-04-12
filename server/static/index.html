@@ -12,6 +12,7 @@
 
     <!-- Dynamic Environment Layer -->
     <canvas id="fluid-canvas"></canvas>
+    <div class="scanline"></div>
 
     <div class="app-shell">
         
@@ -180,10 +181,10 @@
                             <!-- Live Streams -->
                         </div>
 
-                        <!-- Reward Feedback Overlay -->
+                        <!-- Diagnostic Port (Refactored Outcome Overlay) -->
                         <div class="reward-overlay" id="reward-overlay" style="display:none;">
                             <span id="reward-display" class="reward-score">0.00</span>
-                            <h3 class="text-primary">Judicial Alignment Captured</h3>
+                            <h3 id="diagnostic-title" class="text-primary">Judicial Alignment Captured</h3>
                             <div id="feedback-display" class="feedback-bubble">...</div>
                             <button class="btn btn-secondary" style="width: auto; padding: 12px 24px;" onclick="app.closeReward()">Dismiss Signal</button>
                         </div>
