@@ -417,8 +417,9 @@ body::after {
 }
 
 #main-interface {
-    height: 100%;
+    flex: 1;
     min-height: 0;
+    height: auto;
     overflow: hidden;
 }
 
@@ -699,8 +700,11 @@ body::after {
 }
 
 .view-col:first-child {
+    height: 100%;
+    max-height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .terminal-column {
