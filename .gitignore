@@ -1,0 +1,18 @@
+# Local environment and secrets
+.env
+.venv/
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+content_guard_env.egg-info/
+
+# Local design scratch/workbench files
+.kombai/
+
+# Editor/system noise
+.DS_Store
+Thumbs.db

@@ -14,79 +14,103 @@ tags:
 pinned: false
 ---
 
-# ContentGuardEnv: A Research Framework for Policy-Grounded Moderation
+# ContentGuardEnv
 
-ContentGuardEnv is a benchmark environment designed for the **Meta × PyTorch Hackathon 2026**. It moves beyond traditional "toxic vs. safe" classification by challenging AI agents to map content against the complex nuances of **Meta's Community Standards**.
+I built ContentGuardEnv for the **Meta x Hugging Face Hackathon 2026** as a practical moderation environment where an AI agent has to do more than just classify text.
 
-This project provides an **OpenEnv-compliant** interface for training and evaluating autonomous Trust & Safety agents that can not only detect violations but decide on enforcement and generate appellate reasoning.
+Instead of only asking "is this toxic?", the environment asks the model to:
 
----
+1. Detect the policy category.
+2. Choose a proportional enforcement action.
+3. Explain a decision in an appeal-style format.
 
-## 🔬 Design Philosophy
+## Live Deployment
 
-Modern moderation at scale is no longer just a binary classification problem. It requires understanding **intent, context, and severity**. I built ContentGuardEnv to simulate these three specific layers of the moderation lifecycle:
+- Hugging Face Space: https://mj064-contentguardenv.hf.space
+- Hugging Face repo: https://huggingface.co/spaces/mj064/ContentGuardEnv
+- GitHub repo: https://github.com/mj064/meta_hack
 
-1.  **Categorical Alignment (Easy)**: Can the agent identify the specific policy category (e.g., Harassment vs. Hate Speech)?
-2.  **Enforcement Proximity (Medium)**: Is the suggested penalty proportionate to the violation? (e.g., Warning Label vs. Account Removal).
-3.  **Appellate Reasoning (Hard)**: Can the agent justify its decision with specific policy citations and evidence-backed explanations?
+## What This Project Does
 
----
+ContentGuardEnv is an OpenEnv-style environment with three difficulty tiers:
 
-## 🛠️ Technical Architecture
+- Easy: category detection
+- Medium: enforcement action + severity
+- Hard: appeal ruling + policy references
 
-The environment is built on a modular stack designed for scalability and research reproducibility:
+It includes:
 
-*   **Backend**: FastAPI-powered gateway providing both RESTful and WebSocket endpoints for real-time telemetry.
-*   **Evaluation Engine**: A hierarchical grading system that provides partial credit for "near-misses" (e.g., misidentifying Hate Speech as Harassment is penalized less than misidentifying it as Safe).
-*   **Synthetic Data Pipeline**: Integrated with Toxigen and professional safety datasets to provide varying levels of toxicity and adversarial behavior.
-*   **Monitoring Dashboard**: A high-fidelity terminal interface built with vanilla JS and CSS for low-latency observation of agent decision-making.
+- A FastAPI backend for reset/step/state APIs
+- A WebSocket reasoning stream for live agent traces
+- A browser dashboard to run episodes and inspect rewards
+- A grading pipeline that returns reward + feedback for each decision
 
----
+## Why I Built It
 
-## 📐 Integration & Evaluation
+The goal was to simulate the type of moderation decisions that are messy in real systems: ambiguous context, policy tradeoffs, and high-cost mistakes.
 
-### Implementation Details
-ContentGuardEnv follows the [OpenEnv Specification](https://huggingface.co/spaces?search=openenv). It exposes standard lifecycle endpoints:
+This project is meant to be usable both as:
 
-- `POST /reset`: Initializes an episode with a specific difficulty tier.
-- `POST /step/{id}`: Accepts a structured JSON action package.
-- `GET /state/{id}`: Provides the full internal state for debugging.
-- `WS /ws`: A persistent stream for reasoning traces.
+- A demo app for human-in-the-loop moderation testing
+- A benchmark harness for agent evaluation loops
 
-### Running the Evaluation
-To verify an agent against this environment, use the provided `inference.py` script. It is configured to handle official evaluation tags (`[START]`, `[STEP]`, `[END]`) automatically.
+## Stack
+
+- Python + FastAPI
+- Vanilla JS/CSS frontend
+- OpenAI/Hugging Face compatible inference routing
+- Dockerized runtime for Hugging Face Spaces
+
+## Run Locally
+
+1. Install dependencies.
 
 ```bash
-# Set up your environment
-export API_BASE_URL="https://api.openai.com/v1"
-export MODEL_NAME="gpt-4o-mini"
-export HF_TOKEN="your_token_here"
-
-# Execute the benchmark
-python inference.py
+pip install -r requirements.txt
 ```
 
----
+2. Set environment variables (or use a local `.env`).
 
-## 🏗️ Repository Structure
+```bash
+API_BASE_URL=https://api.openai.com/v1
+MODEL_NAME=gpt-4o-mini
+HF_TOKEN=your_token_here
+```
 
-*   `server/`: Contains the FastAPI application and static dashboard assets.
-*   `server/env/`: Core logic including the `ContentGuardEnv` class and reward graders.
-*   `inference.py`: Standardized script for automated benchmarking.
-*   `openenv.yaml`: Environment manifest defining task IDs and hardware requirements.
-*   `Dockerfile`: Container configuration optimized for Hugging Face Spaces.
+3. Start the app.
 
----
+```bash
+python server/app.py
+```
 
-## 💡 Future Directions
+Open http://localhost:7860
 
-This framework is a starting point for more complex safety research. Future iterations could include:
-*   **Multi-Turn Appeals**: Agents defending their decisions against a "User" agent in a dialogue.
-*   **Image/Video Modalities**: Extending the environment to handle multimodal safety checks.
-*   **Dynamic Policy Updates**: Simulating 48-hour policy shifts to test agent adaptability.
+## API Overview
 
----
+- POST `/reset`
+- POST `/step/{episode_id}`
+- GET `/state/{episode_id}`
+- GET `/health`
+- WS `/ws`
 
-## 👥 Authorship
-Developed by **mj064** for the Meta × PyTorch Hackathon 2026.
-Built with a focus on creating safer, more transparent digital communities through better AI alignment.
+## Deploy to Hugging Face Space
+
+This repo includes a helper script:
+
+```bash
+python sync_repo.py
+```
+
+It syncs the project folder to the Space while ignoring local-only artifacts.
+
+## Project Layout
+
+- `server/app.py`: FastAPI app + WebSocket gateway
+- `server/env/`: environment, tasks, graders, data generation
+- `server/static/`: dashboard HTML/CSS/JS
+- `inference.py`: script for benchmark/evaluation flows
+- `sync_repo.py`: one-command Hugging Face Space sync
+
+## Notes
+
+This is actively iterated during hackathon development, so UI and evaluation behavior continue to evolve as edge cases are discovered.
