@@ -707,6 +707,11 @@ body::after {
     scrollbar-gutter: stable;
 }
 
+.view-col:first-child > .alert-banner,
+.view-col:first-child > .card {
+    flex: 0 0 auto;
+}
+
 .terminal-column {
     padding-left: 0;
     overflow: hidden;
