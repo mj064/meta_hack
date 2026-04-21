@@ -388,9 +388,18 @@ const app = {
                         <span class="history-score" style="color:${scoreColor};">${score.toFixed(4)}</span>
                     </header>
                     <p class="history-meta">${this.escapeHTML(entry.timestamp)} · Episode ${this.escapeHTML(entry.episodeId)} · Post ${this.escapeHTML(entry.postId)}</p>
-                    <div class="history-block"><span class="history-label">Prediction</span>${predictionSafe}</div>
-                    <div class="history-block"><span class="history-label">Feedback</span>${feedbackSafe}</div>
-                    <div class="history-block"><span class="history-label">Logs</span>${logsSafe}</div>
+                    <div class="history-block">
+                        <span class="history-label">Prediction</span>
+                        <div class="history-block-body">${predictionSafe}</div>
+                    </div>
+                    <div class="history-block">
+                        <span class="history-label">Feedback</span>
+                        <div class="history-block-body">${feedbackSafe}</div>
+                    </div>
+                    <div class="history-block">
+                        <span class="history-label">Logs</span>
+                        <div class="history-block-body history-block-body-logs">${logsSafe}</div>
+                    </div>
                 </article>
             `;
         }).join('');

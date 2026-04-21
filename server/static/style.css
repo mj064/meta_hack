@@ -558,9 +558,24 @@ body::after {
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.72);
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+
+.history-block-body {
+    overflow-y: auto;
+    max-height: 118px;
+    padding-right: 4px;
     overflow-wrap: anywhere;
     word-break: break-word;
     white-space: pre-wrap;
+    overscroll-behavior: contain;
+}
+
+.history-block-body-logs {
+    max-height: 160px;
 }
 
 .history-label {
